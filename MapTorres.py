@@ -24,7 +24,7 @@ from typing import List, Dict, Any
 import qdarktheme
 import json
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QGraphicsView, 
+    QApplication, QGraphicsProxyWidget, QWidget, QVBoxLayout, QGraphicsView, 
     QGraphicsScene, QGraphicsPathItem, QLabel, QHBoxLayout
 )
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QPolygonF
@@ -43,7 +43,7 @@ class MapWindow(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         
         # criando a sidebar
-        self.sidebar = Sidebar()
+        self.sidebar = Sidebar.Sidebar()
         
         # Mapa
         self.scene = QGraphicsScene()
@@ -54,14 +54,19 @@ class MapWindow(QWidget):
         
         self.main_layout = QHBoxLayout()
         self.main_layout.addWidget(self.view, stretch=4)
-        #self.main_layout.addWidget(self.info_label, stretch=1)
+        self.main_layout.addWidget(self.sidebar, stretch=1) # insere a sidebar no conteiner horizontal 
         
         layout.addLayout(self.main_layout)
         
         municipios = self.carregar_municipios() 
         self.desenhar_mapa(municipios) # desenha os mapas
 
-    def carregar_municipios(self, arquivo: str = "municipios.json") -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
+        # insere a sidebar no cenário
+        proxy = QGraphicsProxyWidget()
+        proxy.setWidget(self.sidebar)
+        self.scene.addItem(proxy) 
+
+    def carregar_municipios(self, arquivo: str = "mun.json") -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
         with open(arquivo, "r", encoding="utf-8") as f:
             dados = json.load(f)
         return dados["municipios"] # retorna a lista de municípios contida no JSON
@@ -90,7 +95,22 @@ class MapWindow(QWidget):
             path_item.setPen(pen)
             path_item.setOpacity(0.92)
             # Dados customizados
-            path_item.setData(0, mun['nome'])           # Nome
+            #dados = ['nome', 'vivo', 'tim', 'claro', 'total_torres', 'area_total', 'populacao', 'regiao']
+            #dados = ['nome','conselho','conselho_link','fundo','fundo_link','regiao','x','y','pathD']
+            '''
+            dados = ["fid","CD_MUN","NM_MUN","UF","Latitude","Longitude","AREA_KM2", "Dados_fid",
+                     "Dados_NM_MUN","Dados_AREA_KM2","Dados_areaqgis","Dados_dados conec pr_NM_MUN_2",
+                     "Dados_dados conec pr_AREA_KM2_2","Dados_dados conec pr_areaconec",
+                     "Dados_dados conec pr_percentualconec","Dados_Torres_claro","Dados_Torres_vivo",
+                     "Dados_Torres_tim","Dados_rede_estadual_ensino","Dados_rede_mun_ensino",
+                     "Dados_locs_sem_conec","Dados_obgs_unifique","Dados_DDD","area_urbana_areaurbana",
+                     "area_rural_arearural","pop_total_mun"]
+            '''
+            for i, dado in enumerate(self.sidebar.nome_atributos):
+                #path_item.setData(0, mun['nome'])
+                path_item.setData(i, mun[dado])
+            
+            
             #path_item.setData(1, mun.get('codigo', '')) # Código se tiver
             # Habilitar eventos
             path_item.setFlag(QGraphicsPathItem.GraphicsItemFlag.ItemIsSelectable) # permite que o item (municipio) seja selecionado no cenário
@@ -116,19 +136,21 @@ class MapWindow(QWidget):
         return polygon
 
     def show_sidebar(self, item: QGraphicsPathItem):
-        nome = item.data(0)
-        self.sidebar.setNomeMunicipio(nome)
+        #nome = item.data(0)
         #print(f"✅ Clicou em: {nome}")
-        self.info_label.setStyleSheet(
-            """
-            background: qlineargradient(
-                x1:0, y1:0,
-                x2:0, y2:1,
-                stop:0 #111,
-                stop:1 #222
-            );
-            """
-        )
+
+        for i, nome_atributo in enumerate(self.sidebar.nome_atributos): # atualiza valores dos dados
+            self.sidebar.setAtributo(nome_atributo, item.data(i))
+
+        """
+        background: qlineargradient(
+            x1:0, y1:0,
+            x2:0, y2:1,
+            stop:0 #111,
+            stop:1 #222
+        );
+        """
+
 
         """
         background: qlineargradient(
@@ -140,13 +162,13 @@ class MapWindow(QWidget):
         );
         """
         # criando o conteiner pra agrupar os elementos da sidebar
-        glow = QWidget(self)
+        '''glow = QWidget(self)
         glow.setStyleSheet("""
             background: rgba(255,255,255,15);
             border-radius: 20px;
         """)
         self.info_label.setText(f"<h3>{nome}</h3><p>Clique registrado!</p>")
-        self.main_layout.addWidget(glow)
+        self.main_layout.addWidget(glow)'''
         
         # Exemplo: destacar município clicado
         for it in self.scene.items():
