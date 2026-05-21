@@ -30,7 +30,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QPolygonF
 from PySide6.QtCore import Qt, QPointF, QRectF
 
-import Sidebar
+import SidebarRight
 
 
 class MapWindow(QWidget):
@@ -43,7 +43,7 @@ class MapWindow(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         
         # criando a sidebar
-        self.sidebar = Sidebar.Sidebar()
+        self.sidebar = SidebarRight.Sidebar()
         
         # Mapa
         self.scene = QGraphicsScene()
@@ -54,7 +54,7 @@ class MapWindow(QWidget):
         
         self.main_layout = QHBoxLayout()
         self.main_layout.addWidget(self.view, stretch=4)
-        self.main_layout.addWidget(self.sidebar, stretch=1) # insere a sidebar no conteiner horizontal 
+        self.main_layout.addWidget(self.sidebar, stretch=1) # insere a sidebar no conteiner horizontal pressionada pro lado direito
         
         layout.addLayout(self.main_layout)
         
@@ -66,7 +66,7 @@ class MapWindow(QWidget):
         proxy.setWidget(self.sidebar)
         self.scene.addItem(proxy) 
 
-    def carregar_municipios(self, arquivo: str = "mun.json") -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
+    def carregar_municipios(self, arquivo: str = "municipios.json") -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
         with open(arquivo, "r", encoding="utf-8") as f:
             dados = json.load(f)
         return dados["municipios"] # retorna a lista de municípios contida no JSON
@@ -105,11 +105,15 @@ class MapWindow(QWidget):
                      "Dados_Torres_tim","Dados_rede_estadual_ensino","Dados_rede_mun_ensino",
                      "Dados_locs_sem_conec","Dados_obgs_unifique","Dados_DDD","area_urbana_areaurbana",
                      "area_rural_arearural","pop_total_mun"]
-            '''
+            
             for i, dado in enumerate(self.sidebar.nome_atributos):
                 #path_item.setData(0, mun['nome'])
                 path_item.setData(i, mun[dado])
-            
+            '''
+            dados = ['nome','conselho','conselho_link','fundo','fundo_link','regiao','x','y','pathD']
+            for i, dado in enumerate(dados):
+                #path_item.setData(0, mun['nome'])
+                path_item.setData(i, mun[dado])
             
             #path_item.setData(1, mun.get('codigo', '')) # Código se tiver
             # Habilitar eventos
