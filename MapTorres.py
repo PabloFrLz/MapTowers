@@ -138,15 +138,34 @@ class MapWindow(QWidget):
         return polygon
 
     def show_sidebar(self, item: QGraphicsPathItem):
-        for i, nome_atributo in enumerate(self.recursos.nome_atributos): # atualiza valores dos dados
-            self.sidebar_right.setAtributo(nome_atributo, item.data(i))
+        # ideentifica o municipio
+        municipio = item.data(0)
+        dados_municipio = self.getDataFromJSON(municipio) # busca os dados do municipio
+        # atualiza valores dos dados nas sidebars 
+        for i, indice_dados in enumerate(self.recursos.indice_dados): 
+            print(f"\n\n\nNome municipio: {dados_municipio.get(indice_dados)}\n\n\n")
+            self.sidebar_right.setAtributo(indice_dados, dados_municipio.get(indice_dados))
+            self.sidebar_left.setAtributo(indice_dados, dados_municipio.get(indice_dados))
+            # stay here!
         
         # Exemplo: destacar município clicado
         for it in self.scene.items():
             if isinstance(it, QGraphicsPathItem):
                 it.setBrush(QBrush(QColor("#3f4e54") if it != item else QColor("#008b3b")))
+                if it != item:
+                    # atualiza o nome da cidade na sidebar esquerda
+                    self.sidebar_left.set_brasao_municipio(municipio, "Parana.png")
+
             #elif isinstance(it, QWidget):
             #    it.setBrush(QBrush(QColor("#3f4e54") if it != item else QColor("#0069b4")))
+
+    def getDataFromJSON(self, municipio):
+        lista_mun = self.carregar_municipios("dados.json") 
+
+        for mun in lista_mun:
+            nome_municipio = mun.get('NM_MUN')
+            if nome_municipio == municipio:
+                return mun
 
 
 # ====================== EXECUÇÃO ======================

@@ -6,9 +6,9 @@ class Recursos():
         # |         DADOS RELEVANTES AO PROJETO          |
         # |______________________________________________|
 
-        self.nome_atributos = ["nome","regiao","total_torres","vivo","claro","tim","obrigacoes_unifique","ddd","area_total","populacao","localidades_sem_conecao"]
+        self.nome_atributos = ["nome","regiao","total_torres","vivo","claro","tim","obrigacoes_unifique","ddd","area_total","populacao","localidades_sem_conecao", "ligga"]
         
-        self.dados = ["fid","CD_MUN","NM_MUN","UF","Latitude","Longitude","AREA_KM2", "Dados_fid",
+        self.indice_dados = ["fid","CD_MUN","NM_MUN","UF","Latitude","Longitude","AREA_KM2", "Dados_fid",
                      "Dados_NM_MUN","Dados_AREA_KM2","Dados_areaqgis","Dados_dados conec pr_NM_MUN_2",
                      "Dados_dados conec pr_AREA_KM2_2","Dados_dados conec pr_areaconec",
                      "Dados_dados conec pr_percentualconec","Dados_Torres_claro","Dados_Torres_vivo",
@@ -16,6 +16,15 @@ class Recursos():
                      "Dados_locs_sem_conec","Dados_obgs_unifique","Dados_DDD","area_urbana_areaurbana",
                      "area_rural_arearural","pop_total_mun"]
         
+        #  __________________________
+        # |           URLs           |
+        # |__________________________|
+
+        self.path_vivo = "imagens/vivo.png"
+        self.path_claro = "imagens/claro.png"
+        self.path_tim = "imagens/tim.png"
+        self.path_ligga = "imagens/ligga.png"
+        self.path_torres_totais = "imagens/torres_totais.png"
 
         #  __________________________
         # |         ESTILOS          |
@@ -25,8 +34,7 @@ class Recursos():
             QFrame {
                 background: rgba(20, 20, 30, 0.95);     /* semi-transparente */
                 border-radius: 16px;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                backdrop-filter: blur(20px);         
+                border: 1px solid rgba(255, 255, 255, 0.1);       
             }
         """
 
@@ -37,7 +45,6 @@ class Recursos():
                 background-repeat: no-repeat;
                 border-radius: 16px;
                 border: none;
-                backdrop-filter: blur(20px);  
 
             }
         """
@@ -49,7 +56,6 @@ class Recursos():
                 background-repeat: no-repeat;
                 border-radius: 16px;
                 border: none;
-                backdrop-filter: blur(20px);  
 
             }
         """
@@ -85,7 +91,6 @@ class Recursos():
                 background-repeat: no-repeat;
                 border-radius: 16px;
                 border: none;
-                backdrop-filter: blur(20px);  
             };
 
             background: qlineargradient(
@@ -95,11 +100,85 @@ class Recursos():
                 stop:1 #222
             );
         """
+    
+        self.vivo_config_style = """
+            background-image: url(imagens/vivo.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            padding-top: 100px;
+            qproperty-alignment: AlignHCenter;
+        """
+
+        self.claro_config_style = """
+            background-image: url(imagens/claro.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            padding-top: 100px;
+            qproperty-alignment: AlignHCenter;
+        """
+
+        self.tim_config_style = """
+            background-image: url(imagens/tim.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            padding-top: 100px;
+            qproperty-alignment: AlignHCenter;
+        """
+
+        self.ligga_config_style = """
+            background-image: url(imagens/ligga.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            padding-top: 100px;
+            qproperty-alignment: AlignHCenter;
+        """
+
+        self.torres_totais_config_style = """
+            background-image: url(imagens/torres_totais.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            padding-top: 100px;
+            qproperty-alignment: AlignHCenter;
+        """
+        
 
     
     #  __________________________
     # |         ANIMAÇÕES        |
     # |__________________________|
-    @staticmethod
     def animationHover():
         pass
+
+    def getHTML(self, nome_municipio, nome_arquivo):
+        #  __________________________
+        # |           HTML           |
+        # |__________________________|
+        
+        # HTML com imagem + texto embaixo
+        html = f"""
+            <div style='text-align: center;'>
+                <img src='brasoes/{nome_arquivo}' width='70' height='70'>
+                <br><b>{nome_municipio}</b>
+            </div>
+        """
+        return html

@@ -22,14 +22,13 @@ class SidebarRight(QWidget):
         self.painel_direito = QFrame(self)
         self.painel_direito.setObjectName("painel_direito")
         self.painel_direito.setStyleSheet(self.recursos.style_qframe_2)
-        self.painel_direito.setContentsMargins(7, -5, 0, 0)
+        self.painel_direito.setContentsMargins(10, -5, 0, 0)
 
 
         self.layout_principal = QVBoxLayout() #conteiner vertical pra agrupar os elementos textuais
-        #self.layout_principal.setContentsMargins(0, 0, 0, 0)
-        self.background = QLabel()# Painel lateral (background da sidebar)
+        self.background = QLabel()# background de topo da sidebar da esquerda
         self.background.setStyleSheet(self.recursos.card_board_gradient_vertical)
-        self.background.setPixmap(QPixmap("imagens/logo_seia_sidebar.png").scaled(200, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)) 
+        self.background.setPixmap(QPixmap("imagens/logo_seia_sidebar_full.png").scaled(200, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)) 
         self.background.setFixedWidth(235) #fixando manualmente a largura pra caber na interface
         self.background.setAlignment(Qt.AlignmentFlag.AlignCenter) 
         #self.background.move(self.background.x() + 150, self.background.y())
@@ -77,13 +76,13 @@ class SidebarRight(QWidget):
 
     def setAtributo(self, nome_atributo, val): # atualiza valores dos dados
         valor = str(val)
-        if nome_atributo == self.recursos.nome_atributos[0]: self.nome.setText(valor)
-        if nome_atributo == self.recursos.nome_atributos[1]: self.regiao.setText(valor)
-        if nome_atributo == self.recursos.nome_atributos[6]: self.obrigacoes_unifique.setText(valor)
-        if nome_atributo == self.recursos.nome_atributos[7]: self.ddd.setText(valor)
-        if nome_atributo == self.recursos.nome_atributos[8]: self.area.setText(valor)
-        if nome_atributo == self.recursos.nome_atributos[9]: self.populacao.setText(valor)
-        if nome_atributo == self.recursos.nome_atributos[10]: self.localidades_sem_conexao.setText(valor)
+        if nome_atributo == self.recursos.indice_dados[2]: self.nome.setText(valor)
+        if nome_atributo == self.recursos.indice_dados[1]: self.regiao.setText("...")
+        if nome_atributo == self.recursos.indice_dados[21]: self.obrigacoes_unifique.setText(valor)
+        if nome_atributo == self.recursos.indice_dados[22]: self.ddd.setText(valor)
+        if nome_atributo == self.recursos.indice_dados[23]: self.area.setText(valor)
+        if nome_atributo == self.recursos.indice_dados[25]: self.populacao.setText(valor)
+        if nome_atributo == self.recursos.indice_dados[20]: self.localidades_sem_conexao.setText(valor)
 
     
     def calculoProporcaoAreasConectadas(self):
