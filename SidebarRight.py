@@ -12,7 +12,7 @@ class SidebarRight(QWidget):
         #dados selecionados para mostrar na interface 
         self.expanded = True
         self.setup_ui()     # Monta layout e widgets da sidebar da direita
-        #self.apply_styles()        # QSS separado
+        self.apply_styles()        # QSS separado
         #self.setup_animations()   # QPropertyAnimation para largura
         #self.setup_connections()
 
@@ -21,18 +21,14 @@ class SidebarRight(QWidget):
         # 1. Container principal (QFrame semi-transparente)
         self.painel_direito = QFrame(self)
         self.painel_direito.setObjectName("painel_direito")
-        self.painel_direito.setStyleSheet(self.recursos.style_qframe_2)
         self.painel_direito.setContentsMargins(10, -5, 0, 0)
 
-
-        self.layout_principal = QVBoxLayout() #conteiner vertical pra agrupar os elementos textuais
+        #conteiner vertical pra agrupar os elementos textuais
+        self.layout_principal = QVBoxLayout() 
         self.background = QLabel()# background de topo da sidebar da esquerda
-        self.background.setStyleSheet(self.recursos.card_board_gradient_vertical)
         self.background.setPixmap(QPixmap("imagens/logo_seia_sidebar_full.png").scaled(200, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)) 
         self.background.setFixedWidth(235) #fixando manualmente a largura pra caber na interface
-        self.background.setAlignment(Qt.AlignmentFlag.AlignCenter) 
-        #self.background.move(self.background.x() + 150, self.background.y())
-        #self.layout_principal.setContentsMargins(20,0,0,0)
+        self.background.setAlignment(Qt.AlignmentFlag.AlignCenter) # alinhar ao centro
         #self.background.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False) # permite que outros widgets fiquem por cima  
 
         #atributos da classe - apenas informações técnicas - informações sobre torres estará na outra sidebar
@@ -61,6 +57,15 @@ class SidebarRight(QWidget):
         main_layout.setContentsMargins(10, 10, 10, 10)  # margem da janela
         self.layout_principal.addStretch()
 
+        
+
+    def apply_styles(self):
+        # estilo do QFrame
+        self.painel_direito.setStyleSheet(self.recursos.style_qframe_2)
+
+        #estilo de gradient do background superior onde vai a logo do estado do paraná
+        self.background.setStyleSheet(self.recursos.card_board_gradient_vertical)
+        
         # Configurações adicionais
         self.setStyleSheet("""
             QLineEdit {

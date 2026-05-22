@@ -1,12 +1,14 @@
 
 """  
-    Subject:    Mapa interativo do estado do Paraná, desenvolvido para o programa 
-                Vale das Araucárias, projeto conduzido pelo núcleo de Diretoria em 
-                Inovação (DIN), vinculado à Secretaria de Estado da Inovação em Inteligência 
-                Artificial (SEIA), do Estado do Paraná.
-    Tools: SVG, JSON, Python3, PySide6
+    Subject:    Mapa interativo das torres de telecomunicação presentes no estado do Paraná - 
+                mapa desenvolvido para o programa {nome_do_programa}. Projeto conduzido pela Diretoria
+                de Inovação (DIN) a pedido da Diretoria de Relações Institucionais (DRI), diretorias
+                vinculadas à Secretaria de Estado da Inovação em Inteligência Artificial (SEIA), do 
+                Estado do Paraná.
+    Tools: Python3, PySide6, JSON, qdarktheme, photoshop CC 2015/2019
     Author: Pablo Franco Luz (pablo-tr1@hotmail.com - https://github.com/PabloFrLz)
     Supervisor: André Luis Costa Batistela 
+    Director: Thiago Rodrigo da Silva
     Department: Diretoria de Inovação (DIN) 
     Version: 1.0.0.00
     Start: 18/05/2026 - 07:00AM
@@ -24,7 +26,7 @@ from typing import List, Dict, Any
 import qdarktheme
 import json
 from PySide6.QtWidgets import (
-    QApplication, QGraphicsProxyWidget, QWidget, QVBoxLayout, QGraphicsView, 
+    QApplication, QGraphicsProxyWidget, QPushButton, QWidget, QVBoxLayout, QGraphicsView, 
     QGraphicsScene, QGraphicsPathItem, QLabel, QHBoxLayout
 )
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QPolygonF
@@ -32,18 +34,22 @@ from PySide6.QtCore import Qt, QPointF, QRectF
 
 import SidebarRight, SidebarLeft, Recursos
 
+WIDTH = 1600
+HEIGHT = 850
 
 class MapWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("MapTorres - DRI - v1.0.0.00")
-        self.resize(1600, 850)
+        self.resize(WIDTH, HEIGHT)
         self.recursos = Recursos.Recursos()
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         
-        # criando as sidebars
+        #  __________________________
+        # |     CRIANDO SIDEBARS     |
+        # |__________________________|
         self.sidebar_right = SidebarRight.SidebarRight()
         self.sidebar_left = SidebarLeft.SidebarLeft()
         
@@ -61,6 +67,9 @@ class MapWindow(QWidget):
         
         layout.addLayout(self.main_layout)
         
+        #  __________________________
+        # |     GERANDO O MAPA       |
+        # |__________________________|
         municipios = self.carregar_municipios() 
         self.desenhar_mapa(municipios) # desenha os mapas
 
@@ -72,6 +81,44 @@ class MapWindow(QWidget):
         proxy_left = QGraphicsProxyWidget()
         proxy_left.setWidget(self.sidebar_left)
         self.scene.addItem(proxy_left)
+
+        #  __________________________
+        # |       BOTÕES ZOOM        |
+        # |__________________________|
+        conteiner_buttons = QWidget()
+        layout_buttons = QHBoxLayout(conteiner_buttons) #horizontal pois ficaram um do lado do outro
+        btn_zoom_in = QPushButton(self)
+        btn_zoom_in.setStyleSheet(self.recursos.btn_zoom_in_style) #carrega imagem e demais efeitos do button
+        btn_zoom_in.clicked.connect(self.zoom_in)
+        btn_zoom_out = QPushButton(self)
+        btn_zoom_out.setStyleSheet(self.recursos.btn_zoom_out_style)
+        btn_zoom_out.clicked.connect(self.zoom_out)
+
+        layout_buttons.addWidget(btn_zoom_in) # insere os buttons no conteiner
+        layout_buttons.addWidget(btn_zoom_out)
+        layout_buttons.addStretch() # espreme pra ficar um do lado do outro
+        layout_buttons.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.main_layout.addWidget(conteiner_buttons)
+        #layout.addLayout(layout_buttons)
+
+
+
+
+        '''proxy_button = QGraphicsProxyWidget()
+        proxy_button.setWidget(conteiner_buttons)
+        proxy_button.setPos(100, 100)
+        proxy_button.
+
+        self.scene.addItem(proxy_button)
+        #layout.addLayout(conteiner_zoom_buttons)'''
+
+
+        
+
+
+
+
 
 
 
@@ -105,11 +152,6 @@ class MapWindow(QWidget):
             path_item.setPen(pen)
             path_item.setOpacity(0.92)
             # Dados customizados
-            '''
-            for i, dado in enumerate(self.sidebar.nome_atributos):
-                #path_item.setData(0, mun['nome'])
-                path_item.setData(i, mun[dado])
-            '''
             dados = ['nome','conselho','conselho_link','fundo','fundo_link','regiao','x','y','pathD']
             for i, dado in enumerate(dados):
                 path_item.setData(i, mun[dado])
@@ -143,7 +185,6 @@ class MapWindow(QWidget):
         dados_municipio = self.getDataFromJSON(municipio) # busca os dados do municipio
         # atualiza valores dos dados nas sidebars 
         for i, indice_dados in enumerate(self.recursos.indice_dados): 
-            print(f"\n\n\nNome municipio: {dados_municipio.get(indice_dados)}\n\n\n")
             self.sidebar_right.setAtributo(indice_dados, dados_municipio.get(indice_dados))
             self.sidebar_left.setAtributo(indice_dados, dados_municipio.get(indice_dados))
             # stay here!
@@ -165,8 +206,28 @@ class MapWindow(QWidget):
         for mun in lista_mun:
             nome_municipio = mun.get('NM_MUN')
             if nome_municipio == municipio:
+                print(f"Dados do municipio '{nome_municipio}' encontrado.")
                 return mun
+    
+    def wheelEvent(self, event):
+        # Zoom com roda do mouse
+        fator = 1.15 if event.angleDelta().y() > 0 else 0.85
+        self.view.scale(fator, fator)
 
+    def zoom_in(self): # ação do icone zoom_in para dar zoom no mapa
+        fator = 1.15
+        self.view.scale(fator, fator)
+
+    def zoom_out(self): # ação do icone zoom_out para retroceder o zoom no mapa
+        fator = 0.85
+        self.view.scale(fator, fator)
+    
+    
+    def setTheme(self):
+        self.sidebar_left.setDisabled()
+        self.sidebar_right.setDisabled()
+
+        
 
 # ====================== EXECUÇÃO ======================
 if __name__ == "__main__":

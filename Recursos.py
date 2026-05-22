@@ -109,7 +109,7 @@ class Recursos():
             font-size: 18px;
             font-weight: bold;
             border: none;
-            padding-top: 100px;
+            padding-top: 80px;
             qproperty-alignment: AlignHCenter;
         """
 
@@ -121,7 +121,7 @@ class Recursos():
             font-size: 18px;
             font-weight: bold;
             border: none;
-            padding-top: 100px;
+            padding-top: 80px;
             qproperty-alignment: AlignHCenter;
         """
 
@@ -133,7 +133,7 @@ class Recursos():
             font-size: 18px;
             font-weight: bold;
             border: none;
-            padding-top: 100px;
+            padding-top: 80px;
             qproperty-alignment: AlignHCenter;
         """
 
@@ -145,7 +145,7 @@ class Recursos():
             font-size: 18px;
             font-weight: bold;
             border: none;
-            padding-top: 100px;
+            padding-top: 80px;
             qproperty-alignment: AlignHCenter;
         """
 
@@ -157,7 +157,23 @@ class Recursos():
             font-size: 18px;
             font-weight: bold;
             border: none;
-            padding-top: 100px;
+            padding-top: 80px;
+            qproperty-alignment: AlignHCenter;
+        """
+
+        self.btn_zoom_in_style = """
+            background-image: url(imagens/zoom_in.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            border: none;
+            qproperty-alignment: AlignHCenter;
+        """
+
+        self.btn_zoom_out_style = """
+            background-image: url(imagens/zoom_out.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            border: none;
             qproperty-alignment: AlignHCenter;
         """
         
