@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QApplication
 from PySide6.QtCore import Qt, QTimer, QPointF
-from PySide6.QtGui import QPainter, QColor, QPen
+from PySide6.QtGui import QPaintEvent, QPainter, QColor, QPen
 import math
 import sys
 
@@ -12,16 +12,17 @@ class Ripple:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.radius = 5.0
-        self.max_radius = 150.0
+        self.radius = 2.0
+        self.max_radius = 80.0
         self.opacity = 1.0
-        self.speed = 1.8          # quanto cresce por frame
+        self.speed = 1.8    # quanto cresce por frame
+        self.diametro_linha_circulo = 1
 
 
 class RippleWidget(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent, width, height):
         super().__init__(parent)
-        self.setMinimumSize(600, 400)
+        self.setMinimumSize(width, height)
         self.ripples = []
         self.setAttribute(Qt.WA_StyledBackground, True)
         
@@ -47,31 +48,9 @@ class RippleWidget(QWidget):
     def create_ripple(self, pos=None):
         if pos is not None:
             self.ripples.append(Ripple(pos.x(), pos.y()))
+            self.update() # forma correta de chamar o paintEvent() - diz ao pyqt que o widget precisa ser redesenhado.
 
-            painter = QPainter(self)
-            painter.setRenderHint(QPainter.Antialiasing)
-            for ripple in self.ripples[:]:
-                # Calcula cor com opacidade
-                alpha = int(ripple.opacity * 180)
-                color = QColor(0, 180, 255, alpha)
-                
-                pen = QPen(color, 3)
-                painter.setPen(pen)
-                painter.drawEllipse(QPointF(ripple.x, ripple.y), 
-                                ripple.radius, ripple.radius)
-
-                # Atualiza ripple
-                ripple.radius += ripple.speed
-                ripple.opacity = max(0.0, 1.0 - (ripple.radius / ripple.max_radius))
-
-                # Remove quando ficar invisível
-                if ripple.opacity <= 0.01:
-                    self.ripples.remove(ripple)
-
-
-
-
-    '''
+    
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -81,7 +60,7 @@ class RippleWidget(QWidget):
             alpha = int(ripple.opacity * 180)
             color = QColor(0, 180, 255, alpha)
             
-            pen = QPen(color, 3)
+            pen = QPen(color, ripple.diametro_linha_circulo)
             painter.setPen(pen)
             painter.drawEllipse(QPointF(ripple.x, ripple.y), 
                               ripple.radius, ripple.radius)
@@ -93,6 +72,8 @@ class RippleWidget(QWidget):
             # Remove quando ficar invisível
             if ripple.opacity <= 0.01:
                 self.ripples.remove(ripple)
+
+    '''            
     def mousePressEvent(self, event):
         """Cria ripple onde o usuário clicar"""
         self.create_ripple(event.position())

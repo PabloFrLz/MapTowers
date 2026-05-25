@@ -53,8 +53,9 @@ class SidebarLeft(QWidget):
         # |    ANIMAÇÃO DAS TORRES   |
         # |__________________________|
 
-        self.ondas = Ripple.RippleWidget()
-        
+        self.ondas = Ripple.RippleWidget(self, self.width(), self.height()+300)
+        self.ondas.setStyleSheet("background-color: transparent;")
+        #self.layout_principal.addWidget(self.ondas)
 
         # configurações finais
         self.painel_esquerdo.setLayout(self.layout_principal)
@@ -98,7 +99,7 @@ class SidebarLeft(QWidget):
             soma = int(self.torres_claro.text()) + int(self.torres_tim.text()) + int(self.torres_vivo.text()) + int(self.torres_ligga.text())
             self.torres_totais.setText(str(soma))
         
-        #executa a animação toda vez que os valores forem atualizados:
+        #trecho adequado para iniciar animação
         self.play()
 
     def set_brasao_municipio(self, nome, arquivo_nome):
@@ -131,10 +132,19 @@ class SidebarLeft(QWidget):
 
         return QPixmap.fromImage(image)
 
-
+    
     def play(self):
-        self.ondas.create_ripple(QPointF(self.torres_totais.x(), self.torres_totais.y()))
-        #self.ondas.create_ripple(QPointF(self.torres_vivo.x(), self.torres_vivo.y()))
-        #self.ondas.create_ripple(QPointF(self.torres_claro.x(), self.torres_claro.y()))
-        #self.ondas.create_ripple(QPointF(self.torres_tim.x(), self.torres_tim.y()))
-        #self.ondas.create_ripple(QPointF(self.torres_ligga.x(), self.torres_ligga.y()))
+        #obtendo as coordenadas absolutas dos objetos que contém a imagem das operadoras
+        pos1 = self.torres_totais.mapTo(self.painel_esquerdo, self.torres_totais.rect().center())
+        pos2 = self.torres_claro.mapTo(self.painel_esquerdo, self.torres_claro.rect().center())
+        pos3 = self.torres_vivo.mapTo(self.painel_esquerdo, self.torres_vivo.rect().center())
+        pos4 = self.torres_tim.mapTo(self.painel_esquerdo, self.torres_tim.rect().center())
+        pos5 = self.torres_ligga.mapTo(self.painel_esquerdo, self.torres_ligga.rect().center())
+
+        # aplicando a animação que tem foco apartir da coordenada obtida
+        self.ondas.create_ripple(QPointF(pos1.x()+10, pos1.y()+10))
+        self.ondas.create_ripple(QPointF(pos2.x()+10, pos2.y()+10))
+        self.ondas.create_ripple(QPointF(pos3.x()+10, pos3.y()+10))
+        self.ondas.create_ripple(QPointF(pos4.x()+10, pos4.y()+10))
+        self.ondas.create_ripple(QPointF(pos5.x()+10, pos5.y()+10))
+    

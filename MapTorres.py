@@ -26,7 +26,7 @@ from typing import List, Dict, Any
 import qdarktheme
 import json
 from PySide6.QtWidgets import (
-    QApplication, QGraphicsProxyWidget, QPushButton, QWidget, QVBoxLayout, QGraphicsView, 
+    QApplication, QGraphicsEllipseItem, QGraphicsProxyWidget, QPushButton, QWidget, QVBoxLayout, QGraphicsView, 
     QGraphicsScene, QGraphicsPathItem, QLabel, QHBoxLayout
 )
 from PySide6.QtGui import QIcon, QPainter, QPen, QBrush, QColor, QPolygonF
@@ -61,10 +61,10 @@ class MapWindow(QWidget):
         self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         
         self.main_layout = QHBoxLayout()
-        self.main_layout.addWidget(self.sidebar_left, stretch=0.3) # insere a sidebar da esquerda
+        self.main_layout.addWidget(self.sidebar_left, stretch=0.3) # insere a sidebar da esquerda com uma proporção bem pequena (0.3)
 
-        # Container que agrupa o mapa (self.view) e os botões de zoom centralizados
-        self.map_container = QWidget()
+        
+        self.map_container = QWidget()# Container que agrupa o mapa (self.view) e os botões de zoom centralizados
         map_layout = QVBoxLayout(self.map_container)
         map_layout.setContentsMargins(0, 0, 0, 0)
         map_layout.addWidget(self.view, stretch=1)
@@ -80,6 +80,8 @@ class MapWindow(QWidget):
         # |__________________________|
         municipios = self.carregar_municipios() 
         self.desenhar_mapa(municipios) # desenha os mapas
+        self.desenhar_torres() # desenha as torres
+
 
         # insere as sidebars no cenário
         proxy_right = QGraphicsProxyWidget()
@@ -125,12 +127,6 @@ class MapWindow(QWidget):
 
 
         
-
-
-
-
-
-
 
 
     def carregar_municipios(self, arquivo: str = "municipios.json") -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
@@ -231,6 +227,22 @@ class MapWindow(QWidget):
     def zoom_out(self): # ação do icone zoom_out para retroceder o zoom no mapa
         fator = 0.85
         self.view.scale(fator, fator)
+
+    def desenhar_torres(self): 
+        #obtem os dados das torres via arquivo.json informado
+        lista_mun = self.carregar_municipios("dados.json") 
+
+        for mun in lista_mun:
+            print("DEBUG: ________")
+            coord_x = float(mun.get('Longitude')) # extrai as coordenadas
+            coord_y = float(mun.get('Latitude'))
+            print(f"x: {coord_x} y: {coord_y}")
+            ellipse = QGraphicsEllipseItem(coord_x, coord_y, 0.02, 0.02) # cria uma elipse/circulo pra representar as torres
+            ellipse.setBrush(QBrush(QColor("#0d9b00"))) # cor interna dos circulos
+            ellipse.setPen(QPen(QColor("#000000"), 0.005)) # cor das bordas dos circulos
+            self.scene.addItem(ellipse) # insere no cenario
+                        
+
     
     
     def setTheme(self):
