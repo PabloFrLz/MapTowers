@@ -2,8 +2,9 @@ from PySide6.QtWidgets import (
     QFrame, QLineEdit, QWidget, QVBoxLayout, QLabel
 )
 from PySide6.QtGui import QColor, QImage, QPixmap, Qt
+from PySide6.QtCore import QPointF
 
-import Recursos
+import Recursos, Ripple
 
 class SidebarLeft(QWidget):
     def __init__(self, parent=None):
@@ -16,55 +17,6 @@ class SidebarLeft(QWidget):
         #self.setup_animations()   # QPropertyAnimation para largura
         #self.setup_connections()
 
-
-    '''def setup_ui(self):  
-        # 1. Container principal (QFrame semi-transparente)
-        self.painel_esquerdo = QFrame(self)
-        self.painel_esquerdo.setObjectName("painel_esquerdo")
-        self.painel_esquerdo.setStyleSheet(self.recursos.style_qframe_3)
-        self.painel_esquerdo.setFixedWidth(100)
-        self.painel_esquerdo.setContentsMargins(4, -6, 0, 0)
-        
-        
-        self.layout_principal = QVBoxLayout() #conteiner vertical pra agrupar os elementos textuais
-
-        self.background = QLabel()# background de topo da sidebar da esquerda
-        self.background.setStyleSheet(self.recursos.card_board_gradient_vertical)
-        #self.background.setPixmap(QPixmap("brasoes/Parana.png").scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)) 
-        #self.brasao_municipio()
-        self.background.setText(self.recursos.getHTML("Curitiba - PR", "Parana.png"))
-        self.background.setFixedSize(78, 100)
-        self.background.setAlignment(Qt.AlignmentFlag.AlignCenter) 
-
-        #atributos da classe - apenas torres pois essa sidebar terá mais destaque que a outra (SidebarRight)
-        self.torres_totais = QLabel("...")
-        self.torres_vivo = QLabel("...")
-        self.torres_claro = QLabel("...")
-        self.torres_tim = QLabel("...")
-        self.torres_ligga = QLabel("...")
-        
-        # lendo o estilo e a imagem definida em Recursos()
-        self.torres_totais.setStyleSheet(self.recursos.torres_totais_config_style)
-        self.torres_vivo.setStyleSheet(self.recursos.vivo_config_style)
-        self.torres_claro.setStyleSheet(self.recursos.claro_config_style)
-        self.torres_tim.setStyleSheet(self.recursos.tim_config_style)
-        self.torres_ligga.setStyleSheet(self.recursos.ligga_config_style)
-
-        #inserção dos elementos
-        self.layout_principal.addWidget(self.background)
-        self.layout_principal.addWidget(self.torres_totais)
-        self.layout_principal.addWidget(self.torres_vivo)
-        self.layout_principal.addWidget(self.torres_claro)
-        self.layout_principal.addWidget(self.torres_tim)
-        self.layout_principal.addWidget(self.torres_ligga)
-        
-        # Layout final da janela
-        self.painel_esquerdo.setLayout(self.layout_principal)
-        main_layout = QVBoxLayout(self)
-        main_layout.addWidget(self.painel_esquerdo)
-        main_layout.setContentsMargins(10, 10, 10, 10)  # margem da janela
-        #self.layout_principal.addStretch()
-    '''
     def setup_ui(self):  
         # 1. Container principal (QFrame semi-transparente)
         self.painel_esquerdo = QFrame(self)
@@ -95,12 +47,21 @@ class SidebarLeft(QWidget):
         self.layout_principal.addWidget(self.torres_claro)
         self.layout_principal.addWidget(self.torres_tim)
         self.layout_principal.addWidget(self.torres_ligga)
+
         
-        # Layout final da janela
+        #  __________________________
+        # |    ANIMAÇÃO DAS TORRES   |
+        # |__________________________|
+
+        self.ondas = Ripple.RippleWidget()
+        
+
+        # configurações finais
         self.painel_esquerdo.setLayout(self.layout_principal)
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(self.painel_esquerdo)
         main_layout.setContentsMargins(10, 10, 10, 10)  # margem da janela
+        self.layout_principal.addStretch()
 
 
     def apply_styles(self):
@@ -136,6 +97,9 @@ class SidebarLeft(QWidget):
             #[NOTA] quando chegar aqui os atributos já terão os dados necessarios pra calcular o total de torres
             soma = int(self.torres_claro.text()) + int(self.torres_tim.text()) + int(self.torres_vivo.text()) + int(self.torres_ligga.text())
             self.torres_totais.setText(str(soma))
+        
+        #executa a animação toda vez que os valores forem atualizados:
+        self.play()
 
     def set_brasao_municipio(self, nome, arquivo_nome):
         '''pixmap = QPixmap("brasoes/Parana.png").scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
@@ -167,3 +131,10 @@ class SidebarLeft(QWidget):
 
         return QPixmap.fromImage(image)
 
+
+    def play(self):
+        self.ondas.create_ripple(QPointF(self.torres_totais.x(), self.torres_totais.y()))
+        #self.ondas.create_ripple(QPointF(self.torres_vivo.x(), self.torres_vivo.y()))
+        #self.ondas.create_ripple(QPointF(self.torres_claro.x(), self.torres_claro.y()))
+        #self.ondas.create_ripple(QPointF(self.torres_tim.x(), self.torres_tim.y()))
+        #self.ondas.create_ripple(QPointF(self.torres_ligga.x(), self.torres_ligga.y()))

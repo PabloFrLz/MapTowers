@@ -29,13 +29,13 @@ from PySide6.QtWidgets import (
     QApplication, QGraphicsProxyWidget, QPushButton, QWidget, QVBoxLayout, QGraphicsView, 
     QGraphicsScene, QGraphicsPathItem, QLabel, QHBoxLayout
 )
-from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QPolygonF
+from PySide6.QtGui import QIcon, QPainter, QPen, QBrush, QColor, QPolygonF
 from PySide6.QtCore import Qt, QPointF, QRectF
 
 import SidebarRight, SidebarLeft, Recursos
 
 WIDTH = 1600
-HEIGHT = 850
+HEIGHT = 900
 
 class MapWindow(QWidget):
     def __init__(self):
@@ -62,9 +62,17 @@ class MapWindow(QWidget):
         
         self.main_layout = QHBoxLayout()
         self.main_layout.addWidget(self.sidebar_left, stretch=0.3) # insere a sidebar da esquerda
-        self.main_layout.addWidget(self.view, stretch=4)
+
+        # Container que agrupa o mapa (self.view) e os botões de zoom centralizados
+        self.map_container = QWidget()
+        map_layout = QVBoxLayout(self.map_container)
+        map_layout.setContentsMargins(0, 0, 0, 0)
+        map_layout.addWidget(self.view, stretch=1)
+        # os botões serão adicionados a este container mais abaixo
+        self.main_layout.addWidget(self.map_container, stretch=4)
+
         self.main_layout.addWidget(self.sidebar_right, stretch=1) # insere a sidebar da direita
-        
+
         layout.addLayout(self.main_layout)
         
         #  __________________________
@@ -87,11 +95,13 @@ class MapWindow(QWidget):
         # |__________________________|
         conteiner_buttons = QWidget()
         layout_buttons = QHBoxLayout(conteiner_buttons) #horizontal pois ficaram um do lado do outro
+        #button zoom in
         btn_zoom_in = QPushButton(self)
-        btn_zoom_in.setStyleSheet(self.recursos.btn_zoom_in_style) #carrega imagem e demais efeitos do button
+        btn_zoom_in.setIcon(QIcon(self.recursos.path_zoom_in))
         btn_zoom_in.clicked.connect(self.zoom_in)
+        # button zoom out
         btn_zoom_out = QPushButton(self)
-        btn_zoom_out.setStyleSheet(self.recursos.btn_zoom_out_style)
+        btn_zoom_out.setIcon(QIcon(self.recursos.path_zoom_out))
         btn_zoom_out.clicked.connect(self.zoom_out)
 
         layout_buttons.addWidget(btn_zoom_in) # insere os buttons no conteiner
@@ -99,9 +109,9 @@ class MapWindow(QWidget):
         layout_buttons.addStretch() # espreme pra ficar um do lado do outro
         layout_buttons.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.main_layout.addWidget(conteiner_buttons)
+        # Insere os botões dentro do container do mapa e centraliza horizontalmente
+        self.map_container.layout().addWidget(conteiner_buttons, alignment=Qt.AlignmentFlag.AlignHCenter)
         #layout.addLayout(layout_buttons)
-
 
 
 

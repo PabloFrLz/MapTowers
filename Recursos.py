@@ -25,6 +25,8 @@ class Recursos():
         self.path_tim = "imagens/tim.png"
         self.path_ligga = "imagens/ligga.png"
         self.path_torres_totais = "imagens/torres_totais.png"
+        self.path_zoom_out = "imagens/zoom_out.png"
+        self.path_zoom_in= "imagens/zoom_in.png"
 
         #  __________________________
         # |         ESTILOS          |
@@ -32,15 +34,36 @@ class Recursos():
 
         self.style_qframe_1 = """
             QFrame {
-                background: rgba(20, 20, 30, 0.95);     /* semi-transparente */
+                background: rgba(20, 20, 30, 0.45);
                 border-radius: 16px;
-                border: 1px solid rgba(255, 255, 255, 0.1);       
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            QLineEdit {
+                background-color: rgba(255, 255, 255, 0.08);   /* fundo leve */
+                border: none;                                   /* remove borda */
+                border-radius: 8px;
+                padding: 6px 8px;
+                color: white;
+                font-size: 11px;
+            }
+
+            QLineEdit:focus {
+                background-color: rgba(255, 255, 255, 0.15);
+                border: 1px solid rgba(0, 120, 255, 0.6);
+            }
+
+            QLabel {
+                background-color: transparent;
+                font-size: 10px;
+                padding: 2px 0px;
+                border: none; 
             }
         """
 
         self.style_qframe_2 = """
             QFrame {
-                background-image: url('imagens/back1.png');   
+                background-image: url('imagens/back1_2.png');   
                 background-position: top;
                 background-repeat: no-repeat;
                 border-radius: 16px;
@@ -109,7 +132,7 @@ class Recursos():
             font-size: 18px;
             font-weight: bold;
             border: none;
-            padding-top: 80px;
+            padding-top: 65px;
             qproperty-alignment: AlignHCenter;
         """
 
@@ -121,7 +144,7 @@ class Recursos():
             font-size: 18px;
             font-weight: bold;
             border: none;
-            padding-top: 80px;
+            padding-top: 65px;
             qproperty-alignment: AlignHCenter;
         """
 
@@ -133,7 +156,7 @@ class Recursos():
             font-size: 18px;
             font-weight: bold;
             border: none;
-            padding-top: 80px;
+            padding-top: 65px;
             qproperty-alignment: AlignHCenter;
         """
 
@@ -145,7 +168,7 @@ class Recursos():
             font-size: 18px;
             font-weight: bold;
             border: none;
-            padding-top: 80px;
+            padding-top: 65px;
             qproperty-alignment: AlignHCenter;
         """
 
@@ -156,26 +179,19 @@ class Recursos():
             background-color: transparent;
             font-size: 18px;
             font-weight: bold;
+            color: black;
             border: none;
-            padding-top: 80px;
+            padding-top: 65px;
             qproperty-alignment: AlignHCenter;
         """
 
-        self.btn_zoom_in_style = """
-            background-image: url(imagens/zoom_in.png);
-            background-repeat: no-repeat;
-            background-position: center;
+        self.titulos = """
+            background: none;
+            font-size: 16px;
+            font-weight: bold;
             border: none;
-            qproperty-alignment: AlignHCenter;
         """
 
-        self.btn_zoom_out_style = """
-            background-image: url(imagens/zoom_out.png);
-            background-repeat: no-repeat;
-            background-position: center;
-            border: none;
-            qproperty-alignment: AlignHCenter;
-        """
         
 
     
