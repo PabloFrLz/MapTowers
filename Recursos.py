@@ -28,6 +28,8 @@ class Recursos():
         self.path_zoom_out = "imagens/zoom_out.png"
         self.path_zoom_in = "imagens/zoom_in.png"
         self.path_toolbox = "imagens/toolbox.png"
+        self.path_button_off = "imagens/off2.png"
+        self.path_button_on = "imagens/on2.png"
 
         #  __________________________
         # |         ESTILOS          |
@@ -204,6 +206,44 @@ class Recursos():
             }
         """
 
+        # estilo nao usado atualmente
+        self.checkbox_button_edition = """
+            QCheckBox {
+                spacing: 20px;
+            }
+            QCheckBox::indicator {
+                width: 23px;
+                height: 23px;
+                border: 1px solid gray;
+                border-radius: 18px;
+            }
+            QCheckBox::indicator:unchecked {
+                image: url(imagens/off2.png); 
+                border: 1px solid gray;
+                border-radius: 18px;
+                background-color: transparent;
+            }
+            QCheckBox::indicator:checked {
+                image: url(imagens/on2.png);
+                border: 1px solid #2196F3;
+                border-radius: 18px;
+                background-color: transparent;
+            }
+        """
+
+        self.push_button = """
+            QPushButton {
+            }
+            QPushButton::indicator {
+                background-color: transparent;
+            }
+            QPushButton::indicator:unchecked {
+                background-color: transparent;
+            }
+            QPushButton::indicator:checked {
+                background-color: #D8FEE9;
+            }
+        """
         
 
     

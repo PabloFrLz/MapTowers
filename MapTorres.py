@@ -26,7 +26,7 @@ from typing import List, Dict, Any
 import qdarktheme
 import json
 from PySide6.QtWidgets import (
-    QApplication, QGraphicsEllipseItem, QGraphicsProxyWidget, QGraphicsTextItem, QPushButton, QWidget, QVBoxLayout, QGraphicsView, 
+    QApplication, QCheckBox, QGraphicsEllipseItem, QGraphicsProxyWidget, QGraphicsTextItem, QPushButton, QWidget, QVBoxLayout, QGraphicsView, 
     QGraphicsScene, QGraphicsPathItem, QLabel, QHBoxLayout
 )
 from PySide6.QtGui import QFont, QIcon, QPainter, QPen, QBrush, QColor, QPolygonF
@@ -37,7 +37,7 @@ import SidebarRight, SidebarLeft, Recursos
 WIDTH = 1600
 HEIGHT = 900
 NOME_SOFT = "GeoTorres Connect Paraná"
-VER = "1.0.0.00"
+VER = "1.0.0.01"
 PATH_DADOS = "dados.json" # dados da DRI
 PATH_MUNICIPIOS = "municipios.json" # dados próprios usados pra desenhar os mapas - possui todos os vertices dos municipios do paraná
 COR_PADRAO = QColor("#555555")
@@ -68,7 +68,7 @@ class MapWindow(QWidget):
         self.view = QGraphicsView(self.scene)
         self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
-        #self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+        self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         
         self.main_layout = QHBoxLayout()
         self.main_layout.addWidget(self.sidebar_left, stretch=0.3) # insere a sidebar da esquerda com uma proporção bem pequena (0.3)
@@ -110,22 +110,48 @@ class MapWindow(QWidget):
         conteiner_buttons = QWidget()
         layout_buttons = QHBoxLayout(conteiner_buttons) #horizontal pois ficaram um do lado do outro
         #button zoom in
-        btn_zoom_in = QPushButton(self)
-        btn_zoom_in.setIcon(QIcon(self.recursos.path_zoom_in))
-        btn_zoom_in.clicked.connect(self.zoom_in)
+        self.btn_zoom_in = QPushButton(self)
+        self.icon_btn_zoom_in = QIcon(self.recursos.path_zoom_in)
+        self.btn_zoom_in.setIcon(self.icon_btn_zoom_in)
+        self.btn_zoom_in.clicked.connect(self.zoom_in)
         # button zoom out
-        btn_zoom_out = QPushButton(self)
-        btn_zoom_out.setIcon(QIcon(self.recursos.path_zoom_out))
-        btn_zoom_out.clicked.connect(self.zoom_out)
+        self.btn_zoom_out = QPushButton(self)
+        self.icon_btn_zoom_out = QIcon(self.recursos.path_zoom_out)
+        self.btn_zoom_out.setIcon(self.icon_btn_zoom_out)
+        self.btn_zoom_out.clicked.connect(self.zoom_out)
+        # button pra trocar de thema
+        self.btn_theme = QPushButton(self)
+        self.icon_btn_off = QIcon(self.recursos.path_button_off)
+        self.icon_btn_on = QIcon(self.recursos.path_button_on)
+        self.btn_theme.setIcon(self.icon_btn_off)
+        self.btn_theme.clicked.connect(self.setTheme)
 
-        layout_buttons.addWidget(btn_zoom_in) # insere os buttons no conteiner
-        layout_buttons.addWidget(btn_zoom_out)
-        layout_buttons.addStretch() # espreme pra ficar um do lado do outro
+        # insere os buttons no conteiner e centraliza
+        layout_buttons.addWidget(self.btn_zoom_in) 
+        layout_buttons.addWidget(self.btn_zoom_out)
+        layout_buttons.addWidget(self.btn_theme)
         layout_buttons.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Insere os botões dentro do container do mapa e centraliza horizontalmente
         self.map_container.layout().addWidget(conteiner_buttons, alignment=Qt.AlignmentFlag.AlignHCenter)
         #layout.addLayout(layout_buttons)
+
+
+        #  ___________________________
+        # |       TOGGLE SWITCH       |
+        # |___________________________|
+
+        # Toggle Switch customizado via stylesheet para o botão que irá transicionar entre themas da aplicação
+        '''
+        self.toggle = QCheckBox()
+        self.toggle.setCheckable(True)
+        self.toggle.setStyleSheet(self.recursos.checkbox_button_edition)
+        layout_buttons.addWidget(self.toggle) # vou inserir no layout dos botoes de zoom pra que fique na região própria para botões da interface
+        layout_buttons.addStretch() # espreme pra ficar um do lado do outro
+        self.toggle.toggled.connect(self.setTheme)
+        '''
+
+
 
         #  __________________________
         # |        COPYRIGHT         |
@@ -275,6 +301,7 @@ class MapWindow(QWidget):
     
     
     def setTheme(self):
+        self.btn_theme.setIcon(self.icon_btn_on) # troca a imagem do button pra iamgem dele ligado (on2.png)
         self.sidebar_left.setDisabled()
         self.sidebar_right.setDisabled()
 
