@@ -26,22 +26,32 @@ from typing import List, Dict, Any
 import qdarktheme
 import json
 from PySide6.QtWidgets import (
-    QApplication, QGraphicsEllipseItem, QGraphicsProxyWidget, QPushButton, QWidget, QVBoxLayout, QGraphicsView, 
+    QApplication, QGraphicsEllipseItem, QGraphicsProxyWidget, QGraphicsTextItem, QPushButton, QWidget, QVBoxLayout, QGraphicsView, 
     QGraphicsScene, QGraphicsPathItem, QLabel, QHBoxLayout
 )
-from PySide6.QtGui import QIcon, QPainter, QPen, QBrush, QColor, QPolygonF
+from PySide6.QtGui import QFont, QIcon, QPainter, QPen, QBrush, QColor, QPolygonF
 from PySide6.QtCore import Qt, QPointF, QRectF
 
 import SidebarRight, SidebarLeft, Recursos
 
 WIDTH = 1600
 HEIGHT = 900
+NOME_SOFT = "GeoTorres Connect Paraná"
+VER = "1.0.0.00"
+PATH_DADOS = "dados.json" # dados da DRI
+PATH_MUNICIPIOS = "municipios.json" # dados próprios usados pra desenhar os mapas - possui todos os vertices dos municipios do paraná
+COR_PADRAO = QColor("#555555")
+COR_PADRAO_2 = QColor("#3f4e54")
+AZUL_PARANA = QColor("#3388ff")
+VERDE_PARANA = QColor("#008b3b")
+COR_TORRES = QColor("#d80000")
 
 class MapWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("MapTorres - DRI - v1.0.0.00")
-        self.resize(WIDTH, HEIGHT)
+        self.setWindowTitle(NOME_SOFT+" - v."+VER)
+        self.setFixedSize(WIDTH, HEIGHT)
+        
         self.recursos = Recursos.Recursos()
         
         layout = QVBoxLayout(self)
@@ -58,7 +68,7 @@ class MapWindow(QWidget):
         self.view = QGraphicsView(self.scene)
         self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
-        self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+        #self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         
         self.main_layout = QHBoxLayout()
         self.main_layout.addWidget(self.sidebar_left, stretch=0.3) # insere a sidebar da esquerda com uma proporção bem pequena (0.3)
@@ -84,6 +94,7 @@ class MapWindow(QWidget):
 
 
         # insere as sidebars no cenário
+        """
         proxy_right = QGraphicsProxyWidget()
         proxy_right.setWidget(self.sidebar_right)
         self.scene.addItem(proxy_right) 
@@ -91,6 +102,7 @@ class MapWindow(QWidget):
         proxy_left = QGraphicsProxyWidget()
         proxy_left.setWidget(self.sidebar_left)
         self.scene.addItem(proxy_left)
+        """
 
         #  __________________________
         # |       BOTÕES ZOOM        |
@@ -115,7 +127,16 @@ class MapWindow(QWidget):
         self.map_container.layout().addWidget(conteiner_buttons, alignment=Qt.AlignmentFlag.AlignHCenter)
         #layout.addLayout(layout_buttons)
 
+        #  __________________________
+        # |        COPYRIGHT         |
+        # |__________________________|
 
+        copyright = QLabel("   © SEIA 2026 — "+NOME_SOFT+" "+VER+". Todos os direitos reservados.\nSoftware institucional desenvolvido para a Diretoria de Relações Institucionais (DRI).")
+        #copyright.setFont(QFont("Arial", 8))
+        #copyright.setDefaultTextColor(QColor("white"))
+        #copyright.setPos(WIDTH-200, HEIGHT-30)
+        layout.addWidget(copyright, alignment=Qt.AlignmentFlag.AlignHCenter)
+        #self.scene.addItem(copyright)
 
         '''proxy_button = QGraphicsProxyWidget()
         proxy_button.setWidget(conteiner_buttons)
@@ -129,15 +150,15 @@ class MapWindow(QWidget):
         
 
 
-    def carregar_municipios(self, arquivo: str = "municipios.json") -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
+    def carregar_municipios(self, arquivo: str = PATH_MUNICIPIOS) -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
         with open(arquivo, "r", encoding="utf-8") as f:
             dados = json.load(f)
         return dados["municipios"] # retorna a lista de municípios contida no JSON
 
     def desenhar_mapa(self, municipios):
         # Cores
-        fill_normal = QColor("#3388ff")
-        fill_inativo = QColor("#555555")
+        #fill_normal = QColor("#3388ff")
+        #fill_inativo = QColor("#555555")
         pen = QPen(QColor("#1a1a1a"), 0.003)
         
         for mun in municipios:
@@ -154,7 +175,7 @@ class MapWindow(QWidget):
             path.addPolygon(polygon)
             path_item.setPath(path)
             # Configurações visuais
-            path_item.setBrush(QBrush(fill_normal if mun.get('fundo') != "Não" else fill_inativo)) # pinta com a cor normal caso o municipio tenha registrado fundos
+            path_item.setBrush(QBrush(AZUL_PARANA if mun.get('fundo') != "Não" else COR_PADRAO)) # pinta com a cor normal caso o municipio tenha registrado fundos
             path_item.setPen(pen)
             path_item.setOpacity(0.92)
             # Dados customizados
@@ -163,7 +184,7 @@ class MapWindow(QWidget):
                 path_item.setData(i, mun[dado])
             
             # Habilitar eventos
-            path_item.setFlag(QGraphicsPathItem.GraphicsItemFlag.ItemIsSelectable) # permite que o item (municipio) seja selecionado no cenário
+            #path_item.setFlag(QGraphicsPathItem.GraphicsItemFlag.ItemIsSelectable) # permite que o item (municipio) seja selecionado no cenário
             path_item.setAcceptHoverEvents(True) # para eventos de hover - implementação futura
             # Conectar eventos
             path_item.mousePressEvent = lambda event, item=path_item: self.show_sidebar(item) # ao clicar no município o metodo 'municipio_clicado()' será chamado
@@ -187,27 +208,29 @@ class MapWindow(QWidget):
 
     def show_sidebar(self, item: QGraphicsPathItem):
         # ideentifica o municipio
-        municipio = item.data(0)
-        dados_municipio = self.getDataFromJSON(municipio) # busca os dados do municipio
+        self.municipio = item.data(0)
+        self.regiao = item.data(5) # desnecessário pra logica desse método mas necessário pra tooltip que surgirá no mapa
+        dados_municipio = self.getDataFromJSON(self.municipio) # busca os dados do municipio
         # atualiza valores dos dados nas sidebars 
         for i, indice_dados in enumerate(self.recursos.indice_dados): 
             self.sidebar_right.setAtributo(indice_dados, dados_municipio.get(indice_dados))
             self.sidebar_left.setAtributo(indice_dados, dados_municipio.get(indice_dados))
             # stay here!
         
+        self.hoverEnterEvent() # mostra o tooltip do municipio
         # Exemplo: destacar município clicado
         for it in self.scene.items():
             if isinstance(it, QGraphicsPathItem):
-                it.setBrush(QBrush(QColor("#3f4e54") if it != item else QColor("#008b3b")))
+                it.setBrush(QBrush(COR_PADRAO_2 if it != item else VERDE_PARANA))
                 if it != item:
                     # atualiza o nome da cidade na sidebar esquerda
-                    self.sidebar_left.set_brasao_municipio(municipio, "Parana.png")
+                    self.sidebar_left.set_brasao_municipio(self.municipio, "Parana.png")
 
             #elif isinstance(it, QWidget):
             #    it.setBrush(QBrush(QColor("#3f4e54") if it != item else QColor("#0069b4")))
 
     def getDataFromJSON(self, municipio):
-        lista_mun = self.carregar_municipios("dados.json") 
+        lista_mun = self.carregar_municipios(PATH_DADOS) 
 
         for mun in lista_mun:
             nome_municipio = mun.get('NM_MUN')
@@ -233,16 +256,22 @@ class MapWindow(QWidget):
         lista_mun = self.carregar_municipios("dados.json") 
 
         for mun in lista_mun:
-            print("DEBUG: ________")
             coord_x = float(mun.get('Longitude')) # extrai as coordenadas
             coord_y = float(mun.get('Latitude'))
-            print(f"x: {coord_x} y: {coord_y}")
             ellipse = QGraphicsEllipseItem(coord_x, coord_y, 0.02, 0.02) # cria uma elipse/circulo pra representar as torres
-            ellipse.setBrush(QBrush(QColor("#0d9b00"))) # cor interna dos circulos
+            ellipse.setBrush(QBrush(COR_TORRES)) # cor interna dos circulos
             ellipse.setPen(QPen(QColor("#000000"), 0.005)) # cor das bordas dos circulos
             self.scene.addItem(ellipse) # insere no cenario
-                        
 
+    #evento ativado automaticamente quando passar o mouse sobre um municipio              
+    def hoverEnterEvent(self):
+        #tooltip com informações básicas
+        self.setToolTip(f"""
+            Município: <b>{self.municipio}</b><br>
+            Região: {self.regiao}<br>
+        """)
+
+        self.setStyleSheet(self.recursos.tooltips)
     
     
     def setTheme(self):

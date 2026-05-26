@@ -26,7 +26,8 @@ class Recursos():
         self.path_ligga = "imagens/ligga.png"
         self.path_torres_totais = "imagens/torres_totais.png"
         self.path_zoom_out = "imagens/zoom_out.png"
-        self.path_zoom_in= "imagens/zoom_in.png"
+        self.path_zoom_in = "imagens/zoom_in.png"
+        self.path_toolbox = "imagens/toolbox.png"
 
         #  __________________________
         # |         ESTILOS          |
@@ -190,6 +191,17 @@ class Recursos():
             font-size: 16px;
             font-weight: bold;
             border: none;
+        """
+
+        self.tooltips = """
+            QToolTip {
+                color: white;
+                background-color: #333333;
+                border: 1px solid #ffffff;
+                padding: 8px;
+                border-radius: 4px;
+                opacity: 230;
+            }
         """
 
         

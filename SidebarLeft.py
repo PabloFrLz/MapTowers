@@ -34,11 +34,12 @@ class SidebarLeft(QWidget):
         self.background.setAlignment(Qt.AlignmentFlag.AlignCenter) 
 
         #atributos da classe - apenas torres pois essa sidebar terá mais destaque que a outra (SidebarRight)
-        self.torres_totais = QLabel("...")
-        self.torres_vivo = QLabel("...")
-        self.torres_claro = QLabel("...")
-        self.torres_tim = QLabel("...")
-        self.torres_ligga = QLabel("...")
+        self.torres_totais = QLabel()
+        self.torres_vivo = QLabel()
+        self.torres_claro = QLabel()
+        self.torres_tim = QLabel()
+        self.torres_ligga = QLabel()
+        self.lista_torres = [self.torres_tim, self.torres_claro, self.torres_vivo, self.torres_ligga] # menos torres_totais
 
         #inserção dos elementos
         self.layout_principal.addWidget(self.background)
@@ -89,12 +90,15 @@ class SidebarLeft(QWidget):
 
 
     def setAtributo(self, nome_atributo, val): # atualiza valores dos dados
-        valor = str(val)
+        # normalizar: se o dado for None, usar '0' para evitar strings 'None'
+        valor = '0' if val is None else str(val)
         if nome_atributo == self.recursos.indice_dados[15]: self.torres_claro.setText(valor)
         if nome_atributo == self.recursos.indice_dados[16]: self.torres_vivo.setText(valor)
         if nome_atributo == self.recursos.indice_dados[17]: self.torres_tim.setText(valor)
         if nome_atributo == self.recursos.indice_dados[18]: 
-            self.torres_ligga.setText(str(0))
+            for i, torre in enumerate(self.lista_torres):
+                if torre.text() == "" or torre.text() == "None": # para os campos vazios na lista de dados.xlsx (json)
+                    self.lista_torres[i].setText('0') # substitui o valor de None para 0 (string) pra evitar erros na hora do calculo abaixo
             #[NOTA] quando chegar aqui os atributos já terão os dados necessarios pra calcular o total de torres
             soma = int(self.torres_claro.text()) + int(self.torres_tim.text()) + int(self.torres_vivo.text()) + int(self.torres_ligga.text())
             self.torres_totais.setText(str(soma))

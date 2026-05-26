@@ -1,0 +1,1 @@
+1 - Valor das torres nao pode ser vazio - em valores vazios por 0.
