@@ -26,7 +26,7 @@ from typing import List, Dict, Any
 import qdarktheme
 import json
 from PySide6.QtWidgets import (
-    QApplication, QCheckBox, QGraphicsEllipseItem, QGraphicsProxyWidget, QGraphicsTextItem, QPushButton, QWidget, QVBoxLayout, QGraphicsView, 
+    QApplication, QCheckBox, QGraphicsEllipseItem, QGraphicsProxyWidget, QGraphicsTextItem, QPushButton, QScrollArea, QWidget, QVBoxLayout, QGraphicsView, 
     QGraphicsScene, QGraphicsPathItem, QLabel, QHBoxLayout
 )
 from PySide6.QtGui import QFont, QIcon, QPainter, QPen, QBrush, QColor, QPolygonF
@@ -45,6 +45,15 @@ COR_PADRAO_2 = QColor("#3f4e54")
 AZUL_PARANA = QColor("#3388ff")
 VERDE_PARANA = QColor("#008b3b")
 COR_TORRES = QColor("#d80000")
+
+#CORES PARA REGIÕES:
+COR_REGIAO_CURITIBA = QColor("#555555")
+COR_REGIAO_CASCAVEL = QColor("#474747")
+COR_REGIAO_PONTAGROSSA = QColor("#383838")
+COR_REGIAO_LONDRINA = QColor("#252525")
+COR_REGIAO_MARINGA = QColor("#1D1D1D")
+COR_REGIAO_GUARAPUAVA = QColor("#141414")
+
 
 class MapWindow(QWidget):
     def __init__(self):
@@ -68,23 +77,21 @@ class MapWindow(QWidget):
         self.view = QGraphicsView(self.scene)
         self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
-        self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
-        
+        self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag) # comentar caso queira remover a mãozinha do mapa - só que ai perde a função de clicar fora do mapa e arrastar ele pros lados
+        #self.view.addScrollBarWidget(scroll, Qt.AlignmentFlag.AlignCenter)
+
         self.main_layout = QHBoxLayout()
         self.main_layout.addWidget(self.sidebar_left, stretch=0.3) # insere a sidebar da esquerda com uma proporção bem pequena (0.3)
 
-        
         self.map_container = QWidget()# Container que agrupa o mapa (self.view) e os botões de zoom centralizados
         map_layout = QVBoxLayout(self.map_container)
         map_layout.setContentsMargins(0, 0, 0, 0)
         map_layout.addWidget(self.view, stretch=1)
         # os botões serão adicionados a este container mais abaixo
         self.main_layout.addWidget(self.map_container, stretch=4)
-
         self.main_layout.addWidget(self.sidebar_right, stretch=1) # insere a sidebar da direita
-
         layout.addLayout(self.main_layout)
-        
+
         #  __________________________
         # |     GERANDO O MAPA       |
         # |__________________________|
@@ -162,7 +169,8 @@ class MapWindow(QWidget):
         #copyright.setFont(QFont("Arial", 8))
         #copyright.setDefaultTextColor(QColor("white"))
         #copyright.setPos(WIDTH-200, HEIGHT-30)
-        layout.addWidget(copyright, alignment=Qt.AlignmentFlag.AlignHCenter)
+        layout.addWidget(copyright, alignment=Qt.AlignmentFlag.AlignCenter)
+        copyright.setContentsMargins(0,0,200,0)
         #self.scene.addItem(copyright)
 
         '''proxy_button = QGraphicsProxyWidget()
@@ -202,7 +210,18 @@ class MapWindow(QWidget):
             path.addPolygon(polygon)
             path_item.setPath(path)
             # Configurações visuais
-            path_item.setBrush(QBrush(AZUL_PARANA if mun.get('fundo') != "Não" else COR_PADRAO)) # pinta com a cor normal caso o municipio tenha registrado fundos
+            #path_item.setBrush(QBrush(AZUL_PARANA if mun.get('fundo') != "Não" else COR_PADRAO)) # pinta com a cor normal caso o municipio tenha registrado fundos
+            path_item.setBrush(QBrush(COR_PADRAO)) # cor inicial do mapa
+            '''
+            # descomentar caso queira implementar cores diferentes dado região do paraná
+            if mun.get('regiao') == "curitiba": path_item.setBrush(QBrush(COR_REGIAO_CURITIBA))
+            elif mun.get('regiao') == "cascavel": path_item.setBrush(QBrush(COR_REGIAO_CASCAVEL))
+            elif mun.get('regiao') == "londrina": path_item.setBrush(QBrush(COR_REGIAO_LONDRINA))
+            elif mun.get('regiao') == "ponta-grossa": path_item.setBrush(QBrush(COR_REGIAO_PONTAGROSSA))
+            elif mun.get('regiao') == "maringa": path_item.setBrush(QBrush(COR_REGIAO_MARINGA))
+            elif mun.get('regiao') == "guarapuava": path_item.setBrush(QBrush(COR_REGIAO_GUARAPUAVA))
+            '''
+            
             path_item.setPen(pen)
             path_item.setOpacity(0.92)
             # Dados customizados
@@ -297,17 +316,17 @@ class MapWindow(QWidget):
             Município: <b>{self.municipio}</b><br>
             Região: {self.regiao}<br>
         """)
-
         self.setStyleSheet(self.recursos.tooltips)
     
     
     def setTheme(self):
         if self.enable_theme:
-            self.btn_theme.setIcon(self.icon_btn_on) # troca a imagem do button pra imagem dele ligado
+            self.btn_theme.setIcon(self.icon_btn_on) # altera imagem do ícone para on
             self.sidebar_left.painel_esquerdo.setStyleSheet(self.recursos.style_theme_2_aux)
             self.sidebar_right.painel_direito.setStyleSheet(self.recursos.style_theme_2)
+            
         else:
-            self.btn_theme.setIcon(self.icon_btn_off) # imagem off
+            self.btn_theme.setIcon(self.icon_btn_off) # altera imagem do ícone para off
             self.sidebar_left.painel_esquerdo.setStyleSheet(self.recursos.style_theme_1_aux)
             self.sidebar_right.painel_direito.setStyleSheet(self.recursos.style_theme_1)
         
@@ -321,4 +340,12 @@ if __name__ == "__main__":
     app.setStyleSheet(qdarktheme.load_stylesheet("dark"))
     window = MapWindow()
     window.show()
+    #adicionando uma scrollbar pra corrigir o problema de limitação da tela de 1600x900p
+    '''
+    scroll = QScrollArea()
+    scroll.setWidgetResizable(True)
+    scroll.setWidget(window)
+    scroll.setFixedSize(WIDTH, HEIGHT)
+    scroll.show() # mostra a janela da aplicação
+    '''
     sys.exit(app.exec())
