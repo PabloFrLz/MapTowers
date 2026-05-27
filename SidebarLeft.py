@@ -68,7 +68,7 @@ class SidebarLeft(QWidget):
 
     def apply_styles(self):
         # estilo do QFrame
-        self.painel_esquerdo.setStyleSheet(self.recursos.style_qframe_3)
+        self.painel_esquerdo.setStyleSheet(self.recursos.style_theme_1_aux)
 
         # estilo do background onde lê o nome do municipio e brasão
         self.background.setStyleSheet(self.recursos.card_board_gradient_vertical) 

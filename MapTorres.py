@@ -125,6 +125,7 @@ class MapWindow(QWidget):
         self.icon_btn_on = QIcon(self.recursos.path_button_on)
         self.btn_theme.setIcon(self.icon_btn_off)
         self.btn_theme.clicked.connect(self.setTheme)
+        self.enable_theme = True # variavel de controle do tema
 
         # insere os buttons no conteiner e centraliza
         layout_buttons.addWidget(self.btn_zoom_in) 
@@ -301,9 +302,16 @@ class MapWindow(QWidget):
     
     
     def setTheme(self):
-        self.btn_theme.setIcon(self.icon_btn_on) # troca a imagem do button pra iamgem dele ligado (on2.png)
-        self.sidebar_left.setDisabled()
-        self.sidebar_right.setDisabled()
+        if self.enable_theme:
+            self.btn_theme.setIcon(self.icon_btn_on) # troca a imagem do button pra imagem dele ligado
+            self.sidebar_left.painel_esquerdo.setStyleSheet(self.recursos.style_theme_2_aux)
+            self.sidebar_right.painel_direito.setStyleSheet(self.recursos.style_theme_2)
+        else:
+            self.btn_theme.setIcon(self.icon_btn_off) # imagem off
+            self.sidebar_left.painel_esquerdo.setStyleSheet(self.recursos.style_theme_1_aux)
+            self.sidebar_right.painel_direito.setStyleSheet(self.recursos.style_theme_1)
+        
+        self.enable_theme = not self.enable_theme # inverte
 
         
 

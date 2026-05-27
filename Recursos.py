@@ -64,7 +64,7 @@ class Recursos():
             }
         """
 
-        self.style_qframe_2 = """
+        self.style_theme_1 = """
             QFrame {
                 background-image: url('imagens/back1_2.png');   
                 background-position: top;
@@ -75,7 +75,7 @@ class Recursos():
             }
         """
 
-        self.style_qframe_3 = """
+        self.style_theme_1_aux = """
             QFrame {
                 background-image: url('imagens/back2.png');   
                 background-position: top;
@@ -83,6 +83,26 @@ class Recursos():
                 border-radius: 16px;
                 border: none;
 
+            }
+        """
+
+        self.style_theme_2 = """
+            QFrame {
+                background-image: url('imagens/back_parana_right.png');   
+                background-position: top;
+                background-repeat: no-repeat;
+                border-radius: 16px;
+                border: none;
+            }
+        """
+
+        self.style_theme_2_aux = """
+            QFrame {
+                background-image: url('imagens/back_parana_left.png');   
+                background-position: top;
+                background-repeat: no-repeat;
+                border-radius: 16px;
+                border: none;
             }
         """
 

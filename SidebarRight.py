@@ -156,7 +156,7 @@ class SidebarRight(QWidget):
 
     def apply_styles(self):
         # estilo do QFrame
-        self.painel_direito.setStyleSheet(self.recursos.style_qframe_2)
+        self.painel_direito.setStyleSheet(self.recursos.style_theme_1)
         #estilo de gradient do background superior onde vai a logo do estado do paraná
         self.background.setStyleSheet(self.recursos.card_board_gradient_vertical)
         # Configurações adicionais
