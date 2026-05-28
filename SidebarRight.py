@@ -1,14 +1,19 @@
 from PySide6.QtWidgets import (
-    QFrame, QHBoxLayout, QLayout, QLineEdit, QWidget, QVBoxLayout, QLabel
+    QFrame, QHBoxLayout, QLayout, QLineEdit, QPushButton, QWidget, QVBoxLayout, QLabel
 )
 from PySide6.QtGui import QIcon, QPixmap, Qt
+from PySide6.QtCore import QPoint, QPropertyAnimation, QSize
 
-import Recursos
+import Recursos, MplCanvas 
 
 class SidebarRight(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.parent_main = parent
         self.recursos = Recursos.Recursos()
+        self.enable_graphs = True
+        self.enable_animation = True
+        self.turnRound = True
         #dados selecionados para mostrar na interface 
         self.expanded = True
         self.setup_ui()     # Monta layout e widgets da sidebar da direita
@@ -137,7 +142,9 @@ class SidebarRight(QWidget):
         self.grupo_com_background_3.setLayout(self.group_3)
         self.grupo_com_background_3.setStyleSheet(self.recursos.style_qframe_1)
 
-
+        #inserindo os QFrames no grupo pra facilitar a animação 
+        self.array_widget_grupos = [self.grupo_com_background_1, self.grupo_com_background_2, self.grupo_com_background_3]
+    
         #inserção dos conteiners no layout principal
         self.layout_principal.addWidget(self.background) # plano de fundo é inserido como widget e nao como item
         
@@ -145,7 +152,54 @@ class SidebarRight(QWidget):
         self.layout_principal.addWidget(self.grupo_com_background_2) # adiciona o grupo 2 com fundo escuro no layout principal
         self.layout_principal.addWidget(self.grupo_com_background_3) # adiciona o grupo 3 com fundo escuro no layout principal
 
-        # configurações finais
+        #  ______________________________
+        # |     BUTTON PARA GRÁFICOS     |
+        # |______________________________|
+        
+        self.conteiner_graphs = QVBoxLayout() # conteiner que será usado pra armazenar os gráficos
+        self.parent_main.main_layout.addItem(self.conteiner_graphs)
+
+        # Botão para transicionar para a seção de gráficos
+        self.btn_graficos = QPushButton()
+        self.btn_graficos_icon_hide =  QIcon(self.recursos.path_button_graphics_hide)
+        self.btn_graficos_icon_show =  QIcon(self.recursos.path_button_graphics_show)
+        self.btn_graficos.setIcon(self.btn_graficos_icon_hide) #inicialmente mostra o icone de retraído/escondido
+        self.btn_graficos.clicked.connect(self.geraGraficos) # se conecta a função que tratará de gerar os gráficos.
+
+        # Botão para habilitar/desabilitar as animações
+        self.btn_animation = QPushButton()
+        self.btn_animation_icon_off = QIcon(self.recursos.path_animation_off)
+        self.btn_animation_icon_on = QIcon(self.recursos.path_animation_on)
+        self.btn_animation.setIcon(self.btn_animation_icon_off) # icone de animação desativada irá destoar dos demais em cor pra dar maior destaque pro usuario saber quando um recurso gráfico relevante foi desativado
+        self.btn_animation.clicked.connect(self.activateAnimation)
+
+        # insere os Botoes no layout
+        self.conteiner_buttons_sidebar_right = QHBoxLayout() #conteiner lateral pros buttons ficarem um do lado do outro
+        self.conteiner_buttons_sidebar_right.addWidget(self.btn_graficos)
+        self.conteiner_buttons_sidebar_right.addWidget(self.btn_animation)
+        self.btn_graficos.setIconSize(QSize(100, 20)) # alterar tamanho dos buttons pra imagem ficar melhor renderizada
+        self.btn_animation.setIconSize(QSize(100, 20))
+        self.layout_principal.insertLayout(1, self.conteiner_buttons_sidebar_right) # insere o widget na segunda posição do conteiner, abaixo da logo principal da secretaria ou diretoria (depende do tema)
+        
+        #self.btn_graficos.setParent(self.painel_direito)
+        #self.btn_graficos.setGeometry(Recursos.WIDTH - 50, Recursos.HEIGHT-600, 50, 50)
+        # ou
+        #self.btn_graficos.move(Recursos.WIDTH - 50, Recursos.HEIGHT-600)
+
+        #  _______________________________________
+        # |     ANIMAÇÃO DE TRANSIÇÃO DE TELA     |
+        # |_______________________________________|
+
+        #animação da largura para rolar a sidebar para a direita
+        self.animacoes = []
+        for grupo in self.array_widget_grupos: # cria uma animação pra cada grupo que contém as informações dos municipios
+            animacao = QPropertyAnimation(grupo, b"pos")
+            animacao.setDuration(1200)
+            self.animacoes.append(animacao)
+
+        #  ________________________________
+        # |     CONFIGURAÇÕES PONTUAIS     |
+        # |________________________________|
         self.painel_direito.setLayout(self.layout_principal)
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(self.painel_direito)
@@ -153,6 +207,9 @@ class SidebarRight(QWidget):
         self.layout_principal.addStretch()
 
         
+    #  ______________________________
+    # |           ESTILOS            |
+    # |______________________________|
 
     def apply_styles(self):
         # estilo do QFrame
@@ -166,11 +223,16 @@ class SidebarRight(QWidget):
             }
         """)
 
-
+    '''
     def toggle(self):
         # Animação de largura + mudança de texto/ícones
         pass
+    '''
     
+    #  ______________________________________
+    # |     INFORMAÇÕES DA SIDEBAR RIGHT     |
+    # |______________________________________|
+
     def gerarCampoDeInformacao(self, descricao, info):
         conteiner = QHBoxLayout()
         descricao = QLabel(descricao)
@@ -186,6 +248,9 @@ class SidebarRight(QWidget):
         conteiner_comprimido_1.addStretch() # comprime mais à esquerda pra reduzir mais ainda o espaço
         return conteiner_comprimido_1
 
+    #  ______________________________
+    # |     TRATAMENTO DOS DADOS     |
+    # |______________________________|
 
     def setAtributo(self, nome_atributo, val): # atualiza valores dos dados
         valor = str(val) 
@@ -211,6 +276,7 @@ class SidebarRight(QWidget):
         if nome_atributo == self.recursos.indice_dados[18]: self.rede_estadual_ensino.setText(valor) 
 
 
+
     def getAreaDesconectada(self):
         area_tot = self.area_total.displayText().split("k") # removendo a string 'km²' do numero float em string pra nao dar erro na hora da conversao em float()
         area_conect = self.area_conectada.displayText().split("k")
@@ -223,3 +289,54 @@ class SidebarRight(QWidget):
         perc_conectado = float(perc_conectado_string[0])
         perc_desconectado = 100 - perc_conectado
         return f"{perc_desconectado:.2f}" #retorna já formatado pra mostra só duas casas após a vírgula
+
+
+    #  ______________________________________
+    # |     AÇÃO DOS BOTÕES DA APLICAÇÃO     |
+    # |______________________________________|
+
+    def geraGraficos(self, parent):
+        if self.enable_graphs:
+            self.btn_graficos.setIcon(self.btn_graficos_icon_show) # altera imagem do ícone para retratar que foi expandido
+            # expandindo a tela na horizontal
+            #self.parent_main.setFixedSize(Recursos.WIDTH+400, Recursos.HEIGHT) # altera a dimensão da tela na horizontal pra inserir a aba de gráficos
+            self.transitToGraphs() # empurra os dados pro lado direito com uma animação de deslocação no eixo x
+            # criando o conteiner pra agrupar verticalmente os graficos
+            # gera gráfico...
+            graph_1 = MplCanvas.MplCanvas(self)
+            graph_1.createGraphs()
+            self.conteiner_graphs.addWidget(graph_1)
+            
+
+        else:
+            self.btn_graficos.setIcon(self.btn_graficos_icon_hide) # altera imagem do ícone para escondido 'hide'
+            # ocultar gráficos...
+            self.transitToGraphs()
+            #self.parent_main.setFixedSize(Recursos.WIDTH, Recursos.HEIGHT) # altera a dimensão da tela na horizontal pra voltar a resolução normal
+        self.enable_graphs = not self.enable_graphs # inverte
+
+    def activateAnimation(self):
+        if self.enable_animation: # desabilita animações da aplicação
+            self.btn_animation.setIcon(self.btn_animation_icon_on)
+            #implementar logica de desativação das animações
+        else:
+            self.btn_animation.setIcon(self.btn_animation_icon_off)
+            #implementar lógica de habilitação das animações
+        self.enable_animation = not self.enable_animation
+
+
+    def transitToGraphs(self):
+        if self.turnRound: # empurra os elementos da sidebar pra direita (ocultando-os)
+            for i, animacao in enumerate(self.animacoes):
+                animacao.setStartValue(QPoint(0, self.array_widget_grupos[i].y()))
+                animacao.setEndValue(QPoint(self.array_widget_grupos[i].x() + 400, self.array_widget_grupos[i].y()))
+                animacao.start() #inicia a animação
+        else: # puxa os elementos da sidebar pra esquerda (mostrando-os de volta)
+            for i, animacao in enumerate(self.animacoes):
+                animacao.setStartValue(QPoint(self.array_widget_grupos[i].x(), self.array_widget_grupos[i].y()))
+                animacao.setEndValue(QPoint(self.array_widget_grupos[i].x() - 400, self.array_widget_grupos[i].y()))  
+                animacao.start() #inicia a animação
+
+        self.turnRound = not self.turnRound # alterna pra retroceder da proxima vez
+    
+

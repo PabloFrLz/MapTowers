@@ -1,6 +1,29 @@
+from PySide6.QtGui import QColor
+
+WIDTH = 1600
+HEIGHT = 900
+NOME_SOFT = "GeoTorres Connect Paraná"
+VER = "1.0.0.01"
+PATH_DADOS = "dados.json" # dados da DRI
+PATH_MUNICIPIOS = "municipios.json" # dados próprios usados pra desenhar os mapas - possui todos os vertices dos municipios do paraná
+COR_PADRAO = QColor("#555555")
+COR_PADRAO_2 = QColor("#3f4e54")
+AZUL_PARANA = QColor("#3388ff")
+VERDE_PARANA = QColor("#008b3b")
+COR_TORRES = QColor("#d80000")
+
+#CORES PARA REGIÕES:
+COR_REGIAO_CURITIBA = QColor("#555555")
+COR_REGIAO_CASCAVEL = QColor("#474747")
+COR_REGIAO_PONTAGROSSA = QColor("#383838")
+COR_REGIAO_LONDRINA = QColor("#252525")
+COR_REGIAO_MARINGA = QColor("#1D1D1D")
+COR_REGIAO_GUARAPUAVA = QColor("#141414")
+
 class Recursos():
     def __init__(self):
         super().__init__()
+
 
         #  ______________________________________________
         # |         DADOS RELEVANTES AO PROJETO          |
@@ -30,6 +53,10 @@ class Recursos():
         self.path_toolbox = "imagens/toolbox.png"
         self.path_button_off = "imagens/off2.png"
         self.path_button_on = "imagens/on2.png"
+        self.path_button_graphics_hide = "imagens/graphs_hide.png"
+        self.path_button_graphics_show = "imagens/graphs_show.png"
+        self.path_animation_off = "imagens/off3.png"
+        self.path_animation_on = "imagens/on3.png"
 
         #  __________________________
         # |         ESTILOS          |

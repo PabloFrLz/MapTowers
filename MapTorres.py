@@ -1,12 +1,12 @@
 
 """  
     Subject:    Mapa interativo das torres de telecomunicação presentes no estado do Paraná - 
-                mapa desenvolvido para o programa {nome_do_programa}. Projeto conduzido pela Diretoria
+                mapa desenvolvido para o programa ... Projeto conduzido pela Diretoria
                 de Inovação (DIN) a pedido da Diretoria de Relações Institucionais (DRI), diretorias
                 vinculadas à Secretaria de Estado da Inovação em Inteligência Artificial (SEIA), do 
                 Estado do Paraná.
     Tools: Python3, PySide6, JSON, qdarktheme, photoshop CC 2015/2019
-    Author: Pablo Franco Luz (pablo-tr1@hotmail.com - https://github.com/PabloFrLz)
+    Author: Pablo Franco Luz (pablo-tr1@hotmail.com - https://github.com/PabloFrLz - 66 992002440)
     Supervisor: André Luis Costa Batistela 
     Director: Thiago Rodrigo da Silva
     Department: Diretoria de Inovação (DIN) 
@@ -34,32 +34,11 @@ from PySide6.QtCore import Qt, QPointF, QRectF
 
 import SidebarRight, SidebarLeft, Recursos
 
-WIDTH = 1600
-HEIGHT = 900
-NOME_SOFT = "GeoTorres Connect Paraná"
-VER = "1.0.0.01"
-PATH_DADOS = "dados.json" # dados da DRI
-PATH_MUNICIPIOS = "municipios.json" # dados próprios usados pra desenhar os mapas - possui todos os vertices dos municipios do paraná
-COR_PADRAO = QColor("#555555")
-COR_PADRAO_2 = QColor("#3f4e54")
-AZUL_PARANA = QColor("#3388ff")
-VERDE_PARANA = QColor("#008b3b")
-COR_TORRES = QColor("#d80000")
-
-#CORES PARA REGIÕES:
-COR_REGIAO_CURITIBA = QColor("#555555")
-COR_REGIAO_CASCAVEL = QColor("#474747")
-COR_REGIAO_PONTAGROSSA = QColor("#383838")
-COR_REGIAO_LONDRINA = QColor("#252525")
-COR_REGIAO_MARINGA = QColor("#1D1D1D")
-COR_REGIAO_GUARAPUAVA = QColor("#141414")
-
-
 class MapWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(NOME_SOFT+" - v."+VER)
-        self.setFixedSize(WIDTH, HEIGHT)
+        self.setWindowTitle(Recursos.NOME_SOFT+" - v."+Recursos.VER)
+        self.setFixedSize(Recursos.WIDTH, Recursos.HEIGHT)
         
         self.recursos = Recursos.Recursos()
         
@@ -69,7 +48,7 @@ class MapWindow(QWidget):
         #  __________________________
         # |     CRIANDO SIDEBARS     |
         # |__________________________|
-        self.sidebar_right = SidebarRight.SidebarRight()
+        self.sidebar_right = SidebarRight.SidebarRight(self)
         self.sidebar_left = SidebarLeft.SidebarLeft()
         
         # Mapa
@@ -91,7 +70,7 @@ class MapWindow(QWidget):
         self.main_layout.addWidget(self.map_container, stretch=4)
         self.main_layout.addWidget(self.sidebar_right, stretch=1) # insere a sidebar da direita
         layout.addLayout(self.main_layout)
-
+        
         #  __________________________
         # |     GERANDO O MAPA       |
         # |__________________________|
@@ -165,7 +144,7 @@ class MapWindow(QWidget):
         # |        COPYRIGHT         |
         # |__________________________|
 
-        copyright = QLabel("   © SEIA 2026 — "+NOME_SOFT+" "+VER+". Todos os direitos reservados.\nSoftware institucional desenvolvido para a Diretoria de Relações Institucionais (DRI).")
+        copyright = QLabel("   © SEIA 2026 — "+Recursos.NOME_SOFT+" "+Recursos.VER+". Todos os direitos reservados.\nSoftware institucional desenvolvido para a Diretoria de Relações Institucionais (DRI).")
         #copyright.setFont(QFont("Arial", 8))
         #copyright.setDefaultTextColor(QColor("white"))
         #copyright.setPos(WIDTH-200, HEIGHT-30)
@@ -185,7 +164,7 @@ class MapWindow(QWidget):
         
 
 
-    def carregar_municipios(self, arquivo: str = PATH_MUNICIPIOS) -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
+    def carregar_municipios(self, arquivo: str = Recursos.PATH_MUNICIPIOS) -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
         with open(arquivo, "r", encoding="utf-8") as f:
             dados = json.load(f)
         return dados["municipios"] # retorna a lista de municípios contida no JSON
@@ -211,7 +190,7 @@ class MapWindow(QWidget):
             path_item.setPath(path)
             # Configurações visuais
             #path_item.setBrush(QBrush(AZUL_PARANA if mun.get('fundo') != "Não" else COR_PADRAO)) # pinta com a cor normal caso o municipio tenha registrado fundos
-            path_item.setBrush(QBrush(COR_PADRAO)) # cor inicial do mapa
+            path_item.setBrush(QBrush(Recursos.COR_PADRAO)) # cor inicial do mapa
             '''
             # descomentar caso queira implementar cores diferentes dado região do paraná
             if mun.get('regiao') == "curitiba": path_item.setBrush(QBrush(COR_REGIAO_CURITIBA))
@@ -267,7 +246,7 @@ class MapWindow(QWidget):
         # Exemplo: destacar município clicado
         for it in self.scene.items():
             if isinstance(it, QGraphicsPathItem):
-                it.setBrush(QBrush(COR_PADRAO_2 if it != item else VERDE_PARANA))
+                it.setBrush(QBrush(Recursos.COR_PADRAO_2 if it != item else Recursos.VERDE_PARANA))
                 if it != item:
                     # atualiza o nome da cidade na sidebar esquerda
                     self.sidebar_left.set_brasao_municipio(self.municipio, "Parana.png")
@@ -276,7 +255,7 @@ class MapWindow(QWidget):
             #    it.setBrush(QBrush(QColor("#3f4e54") if it != item else QColor("#0069b4")))
 
     def getDataFromJSON(self, municipio):
-        lista_mun = self.carregar_municipios(PATH_DADOS) 
+        lista_mun = self.carregar_municipios(Recursos.PATH_DADOS) 
 
         for mun in lista_mun:
             nome_municipio = mun.get('NM_MUN')
@@ -305,7 +284,7 @@ class MapWindow(QWidget):
             coord_x = float(mun.get('Longitude')) # extrai as coordenadas
             coord_y = float(mun.get('Latitude'))
             ellipse = QGraphicsEllipseItem(coord_x, coord_y, 0.02, 0.02) # cria uma elipse/circulo pra representar as torres
-            ellipse.setBrush(QBrush(COR_TORRES)) # cor interna dos circulos
+            ellipse.setBrush(QBrush(Recursos.COR_TORRES)) # cor interna dos circulos
             ellipse.setPen(QPen(QColor("#000000"), 0.005)) # cor das bordas dos circulos
             self.scene.addItem(ellipse) # insere no cenario
 
