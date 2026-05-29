@@ -194,7 +194,7 @@ class SidebarRight(QWidget):
         self.animacoes = []
         for grupo in self.array_widget_grupos: # cria uma animação pra cada grupo que contém as informações dos municipios
             animacao = QPropertyAnimation(grupo, b"pos")
-            animacao.setDuration(1200)
+            animacao.setDuration(1000)
             self.animacoes.append(animacao)
 
         #  ________________________________
@@ -295,7 +295,7 @@ class SidebarRight(QWidget):
     # |     AÇÃO DOS BOTÕES DA APLICAÇÃO     |
     # |______________________________________|
 
-    def geraGraficos(self, parent):
+    def geraGraficos(self):
         if self.enable_graphs:
             self.btn_graficos.setIcon(self.btn_graficos_icon_show) # altera imagem do ícone para retratar que foi expandido
             # expandindo a tela na horizontal
@@ -306,8 +306,6 @@ class SidebarRight(QWidget):
             graph_1 = MplCanvas.MplCanvas(self)
             graph_1.createGraphs()
             self.conteiner_graphs.addWidget(graph_1)
-            
-
         else:
             self.btn_graficos.setIcon(self.btn_graficos_icon_hide) # altera imagem do ícone para escondido 'hide'
             # ocultar gráficos...

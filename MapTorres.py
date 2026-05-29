@@ -44,6 +44,7 @@ class MapWindow(QWidget):
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout = QHBoxLayout()
         
         #  __________________________
         # |     CRIANDO SIDEBARS     |
@@ -59,7 +60,6 @@ class MapWindow(QWidget):
         self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag) # comentar caso queira remover a mãozinha do mapa - só que ai perde a função de clicar fora do mapa e arrastar ele pros lados
         #self.view.addScrollBarWidget(scroll, Qt.AlignmentFlag.AlignCenter)
 
-        self.main_layout = QHBoxLayout()
         self.main_layout.addWidget(self.sidebar_left, stretch=0.3) # insere a sidebar da esquerda com uma proporção bem pequena (0.3)
 
         self.map_container = QWidget()# Container que agrupa o mapa (self.view) e os botões de zoom centralizados
@@ -232,6 +232,11 @@ class MapWindow(QWidget):
         return polygon
 
     def show_sidebar(self, item: QGraphicsPathItem):
+        if not self.sidebar_right.enable_graphs: # para corrigir um bug onde ao clicar no mapa com a barra escondida ela retrocedia pra uma posição incorreta
+            self.sidebar_right.btn_graficos.setIcon(self.sidebar_right.btn_graficos_icon_hide) # altera imagem do ícone para escondido 'hide'
+            self.sidebar_right.transitToGraphs()
+            self.sidebar_right.enable_graphs = not self.sidebar_right.enable_graphs # inverte
+        
         # ideentifica o municipio
         self.municipio = item.data(0)
         self.regiao = item.data(5) # desnecessário pra logica desse método mas necessário pra tooltip que surgirá no mapa
