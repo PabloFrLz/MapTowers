@@ -1,5 +1,8 @@
 from PySide6.QtGui import QColor
-
+#  _______________________  #
+# |** RESOLUÇÃO DA TELA **| #
+# |**    (1600x900p)     **| #
+# |_______________________| #
 WIDTH = 1600
 HEIGHT = 900
 NOME_SOFT = "GeoTorres Connect Paraná"
@@ -19,6 +22,9 @@ COR_REGIAO_PONTAGROSSA = QColor("#383838")
 COR_REGIAO_LONDRINA = QColor("#252525")
 COR_REGIAO_MARINGA = QColor("#1D1D1D")
 COR_REGIAO_GUARAPUAVA = QColor("#141414")
+
+# PARAMÊTROS P/ ANIMAÇÕES
+DURATION_ANIMATION_SLIDE = 1000
 
 class Recursos():
     def __init__(self):
@@ -55,8 +61,8 @@ class Recursos():
         self.path_button_on = "imagens/on2.png"
         self.path_button_graphics_hide = "imagens/graphs_hide.png"
         self.path_button_graphics_show = "imagens/graphs_show.png"
-        self.path_animation_off = "imagens/off3.png"
-        self.path_animation_on = "imagens/on3.png"
+        self.path_animation_off = "imagens/settings_off.png"
+        self.path_animation_on = "imagens/settings_on.png"
 
         #  __________________________
         # |         ESTILOS          |
@@ -290,6 +296,14 @@ class Recursos():
             QPushButton::indicator:checked {
                 background-color: #D8FEE9;
             }
+        """
+
+        self.graphs_background = """
+            background-color: rgba(43, 43, 43, 0.2);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 230;
+
         """
         
 

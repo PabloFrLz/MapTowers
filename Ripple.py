@@ -9,14 +9,14 @@ import sys
 
 
 class Ripple:
-    def __init__(self, x, y):
+    def __init__(self, x, y, radius=2.0, max_radius=80.0, opacity=1.0, speed=1.8, diametro_linha_circulo=1):
         self.x = x
         self.y = y
-        self.radius = 2.0
-        self.max_radius = 80.0
-        self.opacity = 1.0
-        self.speed = 1.8    # quanto cresce por frame
-        self.diametro_linha_circulo = 1
+        self.radius = radius
+        self.max_radius = max_radius
+        self.opacity = opacity
+        self.speed = speed    # quanto cresce por frame
+        self.diametro_linha_circulo = diametro_linha_circulo
 
 
 class RippleWidget(QWidget):
@@ -45,9 +45,13 @@ class RippleWidget(QWidget):
         self.ripples.append(Ripple(pos.x(), pos.y()))
     '''
 
-    def create_ripple(self, pos=None):
+    def create_ripple(self, pos=None, isTorres=None):
         if pos is not None:
-            self.ripples.append(Ripple(pos.x(), pos.y()))
+            if isTorres:
+                self.ripples.append(Ripple(pos.x(), pos.y(), 0.2, 8.0, 0.1, 0.18, 0.1)) # animação das torres no mapa
+            else:
+                self.ripples.append(Ripple(pos.x(), pos.y())) # animação das torres na sidebar left
+            
             self.update() # forma correta de chamar o paintEvent() - diz ao pyqt que o widget precisa ser redesenhado.
 
     

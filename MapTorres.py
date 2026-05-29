@@ -31,8 +31,9 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QFont, QIcon, QPainter, QPen, QBrush, QColor, QPolygonF
 from PySide6.QtCore import Qt, QPointF, QRectF
+from functools import partial
 
-import SidebarRight, SidebarLeft, Recursos
+import SidebarRight, SidebarLeft, Recursos, Ripple
 
 class MapWindow(QWidget):
     def __init__(self):
@@ -49,8 +50,15 @@ class MapWindow(QWidget):
         #  __________________________
         # |     CRIANDO SIDEBARS     |
         # |__________________________|
-        self.sidebar_right = SidebarRight.SidebarRight(self)
+        self.sidebar_right = SidebarRight.SidebarRight()
         self.sidebar_left = SidebarLeft.SidebarLeft()
+
+        #  _____________________________________________
+        # |        OBJETO DE ANIMAÇÃO DAS ONDAS         |
+        # |_____________________________________________|
+        self.ondas = Ripple.RippleWidget(self, self.width(), self.height()+300)
+        #self.ondas.setStyleSheet("background-color: transparent;")
+        self.lista_execucao_de_ondas = []
         
         # Mapa
         self.scene = QGraphicsScene()
@@ -152,6 +160,8 @@ class MapWindow(QWidget):
         copyright.setContentsMargins(0,0,200,0)
         #self.scene.addItem(copyright)
 
+        
+
         '''proxy_button = QGraphicsProxyWidget()
         proxy_button.setWidget(conteiner_buttons)
         proxy_button.setPos(100, 100)
@@ -231,7 +241,8 @@ class MapWindow(QWidget):
                 polygon.append(QPointF(numbers[i], numbers[i + 1]))
         return polygon
 
-    def show_sidebar(self, item: QGraphicsPathItem):
+    
+    def show_sidebar(self, item: QGraphicsPathItem): 
         if not self.sidebar_right.enable_graphs: # para corrigir um bug onde ao clicar no mapa com a barra escondida ela retrocedia pra uma posição incorreta
             self.sidebar_right.btn_graficos.setIcon(self.sidebar_right.btn_graficos_icon_hide) # altera imagem do ícone para escondido 'hide'
             self.sidebar_right.transitToGraphs()
@@ -258,6 +269,11 @@ class MapWindow(QWidget):
 
             #elif isinstance(it, QWidget):
             #    it.setBrush(QBrush(QColor("#3f4e54") if it != item else QColor("#0069b4")))
+        
+        # executa animação das torres emitindo sinal
+        for torre in self.lista_execucao_de_ondas:
+            torre() # executa a animação
+        self.lista_execucao_de_ondas.clear()
 
     def getDataFromJSON(self, municipio):
         lista_mun = self.carregar_municipios(Recursos.PATH_DADOS) 
@@ -292,6 +308,9 @@ class MapWindow(QWidget):
             ellipse.setBrush(QBrush(Recursos.COR_TORRES)) # cor interna dos circulos
             ellipse.setPen(QPen(QColor("#000000"), 0.005)) # cor das bordas dos circulos
             self.scene.addItem(ellipse) # insere no cenario
+            chamada_ao_metodo = self.ondas.create_ripple(QPointF(coord_x, coord_y), True) # cria as ondas emitindo
+            self.lista_execucao_de_ondas.append(chamada_ao_metodo) # salva essa chamada com os parametros atuais para serem executados futuramente em outro contexto (quando usuario selecionar o município).
+            
 
     #evento ativado automaticamente quando passar o mouse sobre um municipio              
     def hoverEnterEvent(self):

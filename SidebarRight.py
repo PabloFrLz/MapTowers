@@ -9,13 +9,21 @@ import Recursos, MplCanvas
 class SidebarRight(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+        # atributos da classe
         self.parent_main = parent
         self.recursos = Recursos.Recursos()
         self.enable_graphs = True
         self.enable_animation = True
-        self.turnRound = True
-        #dados selecionados para mostrar na interface 
         self.expanded = True
+
+        #conteiners adicionais
+        self.widget_graphs = QWidget()
+        self.conteiner_graphs = QVBoxLayout(self.widget_graphs) # conteiner que será usado pra armazenar os gráficos
+        self.widget_graphs.setFixedHeight(Recursos.HEIGHT / 1.5)
+        self.widget_graphs.setStyleSheet(self.recursos.graphs_background)
+
+        # init da aplicação
+        self.widget_main = QWidget()
         self.setup_ui()     # Monta layout e widgets da sidebar da direita
         self.apply_styles()        # QSS separado
         #self.setup_animations()   # QPropertyAnimation para largura
@@ -155,9 +163,6 @@ class SidebarRight(QWidget):
         #  ______________________________
         # |     BUTTON PARA GRÁFICOS     |
         # |______________________________|
-        
-        self.conteiner_graphs = QVBoxLayout() # conteiner que será usado pra armazenar os gráficos
-        self.parent_main.main_layout.addItem(self.conteiner_graphs)
 
         # Botão para transicionar para a seção de gráficos
         self.btn_graficos = QPushButton()
@@ -190,12 +195,17 @@ class SidebarRight(QWidget):
         # |     ANIMAÇÃO DE TRANSIÇÃO DE TELA     |
         # |_______________________________________|
 
-        #animação da largura para rolar a sidebar para a direita
+        # animação da largura para rolar a sidebar para a direita
         self.animacoes = []
         for grupo in self.array_widget_grupos: # cria uma animação pra cada grupo que contém as informações dos municipios
             animacao = QPropertyAnimation(grupo, b"pos")
-            animacao.setDuration(1000)
+            animacao.setDuration(Recursos.DURATION_ANIMATION_SLIDE)
             self.animacoes.append(animacao)
+        
+        # animação do deslizamento do gráfico
+        self.animacao_graph = QPropertyAnimation(self.widget_graphs, b"pos")
+        self.animacao_graph.setDuration(Recursos.DURATION_ANIMATION_SLIDE)
+
 
         #  ________________________________
         # |     CONFIGURAÇÕES PONTUAIS     |
@@ -299,13 +309,19 @@ class SidebarRight(QWidget):
         if self.enable_graphs:
             self.btn_graficos.setIcon(self.btn_graficos_icon_show) # altera imagem do ícone para retratar que foi expandido
             # expandindo a tela na horizontal
-            #self.parent_main.setFixedSize(Recursos.WIDTH+400, Recursos.HEIGHT) # altera a dimensão da tela na horizontal pra inserir a aba de gráficos
             self.transitToGraphs() # empurra os dados pro lado direito com uma animação de deslocação no eixo x
-            # criando o conteiner pra agrupar verticalmente os graficos
             # gera gráfico...
-            graph_1 = MplCanvas.MplCanvas(self)
-            graph_1.createGraphs()
-            self.conteiner_graphs.addWidget(graph_1)
+            '''self.graph_1 = MplCanvas.MplCanvas(self)
+            self.graph_1.createGraphs() # monta o gráfico
+            self.conteiner_graphs.addWidget(self.graph_1)'''
+
+            for i in range(3): # cria 3 graficos e empilha um abaixo do outro
+                graph = MplCanvas.MplCanvas(self)
+                graph.createGraphs() # monta o gráfico
+                self.conteiner_graphs.addWidget(graph)
+
+            #self.layout_principal.insertWidget(2, self.graph_1) # insere os graficos na posição do widget[2], que é o widget dos dados do municipio - e vai empilhando os graficos a aprtir desse ponto.
+            self.layout_principal.insertWidget(2, self.widget_graphs) # insere o grafico na GUI
         else:
             self.btn_graficos.setIcon(self.btn_graficos_icon_hide) # altera imagem do ícone para escondido 'hide'
             # ocultar gráficos...
@@ -324,7 +340,7 @@ class SidebarRight(QWidget):
 
 
     def transitToGraphs(self):
-        if self.turnRound: # empurra os elementos da sidebar pra direita (ocultando-os)
+        if self.expanded: # empurra os elementos da sidebar pra direita (ocultando-os)
             for i, animacao in enumerate(self.animacoes):
                 animacao.setStartValue(QPoint(0, self.array_widget_grupos[i].y()))
                 animacao.setEndValue(QPoint(self.array_widget_grupos[i].x() + 400, self.array_widget_grupos[i].y()))
@@ -335,6 +351,7 @@ class SidebarRight(QWidget):
                 animacao.setEndValue(QPoint(self.array_widget_grupos[i].x() - 400, self.array_widget_grupos[i].y()))  
                 animacao.start() #inicia a animação
 
-        self.turnRound = not self.turnRound # alterna pra retroceder da proxima vez
+        self.expanded = not self.expanded # alterna pra retroceder da proxima vez
+    
     
 
