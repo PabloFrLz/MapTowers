@@ -146,9 +146,15 @@ class SidebarLeft(QWidget):
         pos5 = self.torres_ligga.mapTo(self.painel_esquerdo, self.torres_ligga.rect().center())
 
         # aplicando a animação que tem foco apartir da coordenada obtida
-        self.ondas.create_ripple(QPointF(pos1.x()+10, pos1.y()+10), False)
+        '''self.ondas.create_ripple(QPointF(pos1.x()+10, pos1.y()+10), False)
         self.ondas.create_ripple(QPointF(pos2.x()+10, pos2.y()+10), False)
         self.ondas.create_ripple(QPointF(pos3.x()+10, pos3.y()+10), False)
         self.ondas.create_ripple(QPointF(pos4.x()+10, pos4.y()+10), False)
-        self.ondas.create_ripple(QPointF(pos5.x()+10, pos5.y()+10), False)
+        self.ondas.create_ripple(QPointF(pos5.x()+10, pos5.y()+10), False)'''
+
+        self.ondas.create_ripple(QPointF(pos1.x()+10, pos1.y()+10))
+        self.ondas.create_ripple(QPointF(pos2.x()+10, pos2.y()+10))
+        self.ondas.create_ripple(QPointF(pos3.x()+10, pos3.y()+10))
+        self.ondas.create_ripple(QPointF(pos4.x()+10, pos4.y()+10))
+        self.ondas.create_ripple(QPointF(pos5.x()+10, pos5.y()+10))
     

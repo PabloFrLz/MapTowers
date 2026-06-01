@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QIcon, QPixmap, Qt
 from PySide6.QtCore import QPoint, QPropertyAnimation, QSize
+from shiboken6 import isValid
 
 import Recursos, MplCanvas 
 
@@ -18,9 +19,12 @@ class SidebarRight(QWidget):
 
         #conteiners adicionais
         self.widget_graphs = QWidget()
-        self.conteiner_graphs = QVBoxLayout(self.widget_graphs) # conteiner que será usado pra armazenar os gráficos
+        self.conteiner_graphs = None # conteiner que será usado pra armazenar os gráficos
         self.widget_graphs.setFixedHeight(Recursos.HEIGHT / 1.5)
         self.widget_graphs.setStyleSheet(self.recursos.graphs_background)
+        self.widget_graphs.setVisible(False) # inicialmente eles nao aparecem na interface - aparecem apenas quando estiver deslocando 
+        self.conteiner_graphs = QVBoxLayout(self.widget_graphs) # conteiner que será usado pra armazenar os gráficos
+        
 
         # init da aplicação
         self.widget_main = QWidget()
@@ -152,7 +156,7 @@ class SidebarRight(QWidget):
 
         #inserindo os QFrames no grupo pra facilitar a animação 
         self.array_widget_grupos = [self.grupo_com_background_1, self.grupo_com_background_2, self.grupo_com_background_3]
-    
+
         #inserção dos conteiners no layout principal
         self.layout_principal.addWidget(self.background) # plano de fundo é inserido como widget e nao como item
         
@@ -211,9 +215,9 @@ class SidebarRight(QWidget):
         # |     CONFIGURAÇÕES PONTUAIS     |
         # |________________________________|
         self.painel_direito.setLayout(self.layout_principal)
-        main_layout = QVBoxLayout(self)
-        main_layout.addWidget(self.painel_direito)
-        main_layout.setContentsMargins(10, 10, 10, 10)  # margem da janela
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.addWidget(self.painel_direito)
+        self.main_layout.setContentsMargins(10, 10, 10, 10)  # margem da janela
         self.layout_principal.addStretch()
 
         
@@ -308,25 +312,22 @@ class SidebarRight(QWidget):
     def geraGraficos(self):
         if self.enable_graphs:
             self.btn_graficos.setIcon(self.btn_graficos_icon_show) # altera imagem do ícone para retratar que foi expandido
-            # expandindo a tela na horizontal
-            self.transitToGraphs() # empurra os dados pro lado direito com uma animação de deslocação no eixo x
             # gera gráfico...
-            '''self.graph_1 = MplCanvas.MplCanvas(self)
-            self.graph_1.createGraphs() # monta o gráfico
-            self.conteiner_graphs.addWidget(self.graph_1)'''
-
-            for i in range(3): # cria 3 graficos e empilha um abaixo do outro
+            # self.conteiner_graphs = QVBoxLayout(self.widget_graphs) # conteiner que será usado pra armazenar os gráficos
+            for i in range(3): # cria 3 novos graficos e empilha um abaixo do outro
                 graph = MplCanvas.MplCanvas(self)
                 graph.createGraphs() # monta o gráfico
                 self.conteiner_graphs.addWidget(graph)
-
-            #self.layout_principal.insertWidget(2, self.graph_1) # insere os graficos na posição do widget[2], que é o widget dos dados do municipio - e vai empilhando os graficos a aprtir desse ponto.
-            self.layout_principal.insertWidget(2, self.widget_graphs) # insere o grafico na GUI
+                
+            
+            self.layout_principal.insertWidget(2, self.widget_graphs) # insere o widget do grafico na GUI na posição posterior a posição dos botoes de grafico e de desabilitar animações
+            #self.main_layout.addWidget(self.widget_graphs)
+            self.transitToGraphs() # empurra os dados pro lado direito com uma animação de deslocação no eixo x
         else:
             self.btn_graficos.setIcon(self.btn_graficos_icon_hide) # altera imagem do ícone para escondido 'hide'
             # ocultar gráficos...
-            self.transitToGraphs()
-            #self.parent_main.setFixedSize(Recursos.WIDTH, Recursos.HEIGHT) # altera a dimensão da tela na horizontal pra voltar a resolução normal
+            self.transitToGraphs() # logica de destruição dos objetos esta dentro do metodo
+            
         self.enable_graphs = not self.enable_graphs # inverte
 
     def activateAnimation(self):
@@ -340,18 +341,54 @@ class SidebarRight(QWidget):
 
 
     def transitToGraphs(self):
-        if self.expanded: # empurra os elementos da sidebar pra direita (ocultando-os)
+        if self.expanded: 
+            # [ANIMAÇÃO 1]: empurra os elementos da sidebar pra direita (ocultando-os)
             for i, animacao in enumerate(self.animacoes):
                 animacao.setStartValue(QPoint(0, self.array_widget_grupos[i].y()))
-                animacao.setEndValue(QPoint(self.array_widget_grupos[i].x() + 400, self.array_widget_grupos[i].y()))
+                animacao.setEndValue(QPoint(400, self.array_widget_grupos[i].y()))
                 animacao.start() #inicia a animação
-        else: # puxa os elementos da sidebar pra esquerda (mostrando-os de volta)
+                    
+            # [ANIMAÇÃO 2]: empurra os graficos para a esquerda
+            print(f"x({self.widget_graphs.x()}) y({self.widget_graphs.y()})") # a coordenada de self.widget_graphs está mudando de alguma forma que desconheço
+            self.animacao_graph.setStartValue(QPoint(400, 150))
+            self.animacao_graph.setEndValue(QPoint(10, 150))
+            self.animacao_graph.start()
+            self.widget_graphs.setVisible(True) # torna visivel os graficos na interface pra ver a animação
+        else: 
+            # [ANIMAÇÃO 3]: puxa os elementos da sidebar pra esquerda (mostrando-os de volta)
             for i, animacao in enumerate(self.animacoes):
-                animacao.setStartValue(QPoint(self.array_widget_grupos[i].x(), self.array_widget_grupos[i].y()))
-                animacao.setEndValue(QPoint(self.array_widget_grupos[i].x() - 400, self.array_widget_grupos[i].y()))  
+                animacao.setStartValue(QPoint(400, self.array_widget_grupos[i].y()))
+                animacao.setEndValue(QPoint(0, self.array_widget_grupos[i].y()))  
                 animacao.start() #inicia a animação
 
+            # [ANIMAÇÃO 4]: empurra os gráficos pra direita e os destroem em seguida
+            self.animacao_graph.setStartValue(QPoint(0, 150))
+            self.animacao_graph.setEndValue(QPoint(400, 150))
+            self.animacao_graph.start()
+            self.animacao_graph.finished.connect(self.destroyGraphs) # destroi os gráficos quando a animação terminar
+            
         self.expanded = not self.expanded # alterna pra retroceder da proxima vez
-    
-    
+
+    def destroyGraphs(self):
+        self.widget_graphs.setVisible(False) # deixa o widget invisível novamente
+        self.layout_principal.removeWidget(self.widget_graphs) # remove o widget do layout_principal pra nao dar bug quando tentar adicionar de novo.
+        self.widget_graphs.setParent(None)
+
+        # deleta os widgets do conteiner
+        while self.conteiner_graphs.count() > 0:
+            item = self.conteiner_graphs.takeAt(0)  # remove o item do layout
+            widget = item.widget() # obtem o widget
+            if widget is not None and isValid(widget):
+                widget.deleteLater()        # deleta o widget
+        
+        try:
+            self.animacao_graph.finished.disconnect(self.destroyGraphs) # desconecta o sinal pra evitar de chamar esse metodo na prmeira interação quando os graficos aparecem
+        except:
+            pass
+        
+
+
+
+
+
 

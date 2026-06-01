@@ -46,6 +46,8 @@ class MapWindow(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout = QHBoxLayout()
+
+        
         
         #  __________________________
         # |     CRIANDO SIDEBARS     |
@@ -53,14 +55,11 @@ class MapWindow(QWidget):
         self.sidebar_right = SidebarRight.SidebarRight()
         self.sidebar_left = SidebarLeft.SidebarLeft()
 
-        #  _____________________________________________
-        # |        OBJETO DE ANIMAÇÃO DAS ONDAS         |
-        # |_____________________________________________|
-        self.ondas = Ripple.RippleWidget(self, self.width(), self.height()+300)
-        #self.ondas.setStyleSheet("background-color: transparent;")
-        self.lista_execucao_de_ondas = []
         
-        # Mapa
+        #  ____________________
+        # |        MAPA        |
+        # |____________________|
+        #
         self.scene = QGraphicsScene()
         self.view = QGraphicsView(self.scene)
         self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -68,16 +67,26 @@ class MapWindow(QWidget):
         self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag) # comentar caso queira remover a mãozinha do mapa - só que ai perde a função de clicar fora do mapa e arrastar ele pros lados
         #self.view.addScrollBarWidget(scroll, Qt.AlignmentFlag.AlignCenter)
 
+       
+
+        #  __________________________________________________
+        # |        ADICIONANDO SIDEBARS E MAPA NA GUI        |
+        # |__________________________________________________|
+        #
         self.main_layout.addWidget(self.sidebar_left, stretch=0.3) # insere a sidebar da esquerda com uma proporção bem pequena (0.3)
 
         self.map_container = QWidget()# Container que agrupa o mapa (self.view) e os botões de zoom centralizados
-        map_layout = QVBoxLayout(self.map_container)
-        map_layout.setContentsMargins(0, 0, 0, 0)
-        map_layout.addWidget(self.view, stretch=1)
+        self.map_layout = QVBoxLayout(self.map_container)
+        self.map_layout.setContentsMargins(0, 0, 0, 0)
+        self.map_layout.addWidget(self.view, stretch=1)
         # os botões serão adicionados a este container mais abaixo
         self.main_layout.addWidget(self.map_container, stretch=4)
         self.main_layout.addWidget(self.sidebar_right, stretch=1) # insere a sidebar da direita
         layout.addLayout(self.main_layout)
+        
+        
+        self.lista_execucao_de_ondas = []
+        self.lista_coord_torres = []
         
         #  __________________________
         # |     GERANDO O MAPA       |
@@ -86,17 +95,8 @@ class MapWindow(QWidget):
         self.desenhar_mapa(municipios) # desenha os mapas
         self.desenhar_torres() # desenha as torres
 
-
-        # insere as sidebars no cenário
-        """
-        proxy_right = QGraphicsProxyWidget()
-        proxy_right.setWidget(self.sidebar_right)
-        self.scene.addItem(proxy_right) 
-
-        proxy_left = QGraphicsProxyWidget()
-        proxy_left.setWidget(self.sidebar_left)
-        self.scene.addItem(proxy_left)
-        """
+        
+        
 
         #  __________________________
         # |       BOTÕES ZOOM        |
@@ -153,22 +153,18 @@ class MapWindow(QWidget):
         # |__________________________|
 
         copyright = QLabel("   © SEIA 2026 — "+Recursos.NOME_SOFT+" "+Recursos.VER+". Todos os direitos reservados.\nSoftware institucional desenvolvido para a Diretoria de Relações Institucionais (DRI).")
-        #copyright.setFont(QFont("Arial", 8))
-        #copyright.setDefaultTextColor(QColor("white"))
-        #copyright.setPos(WIDTH-200, HEIGHT-30)
         layout.addWidget(copyright, alignment=Qt.AlignmentFlag.AlignCenter)
         copyright.setContentsMargins(0,0,200,0)
         #self.scene.addItem(copyright)
 
+         #  _____________________________________________
+        # |        OBJETO DE ANIMAÇÃO DAS ONDAS         |
+        # |_____________________________________________|
+        self.ondas = Ripple.RippleWidget(self, self.width(), self.height()+300)
+        #self.ondas.setStyleSheet("background-color: transparent;")
+
         
-
-        '''proxy_button = QGraphicsProxyWidget()
-        proxy_button.setWidget(conteiner_buttons)
-        proxy_button.setPos(100, 100)
-        proxy_button.
-
-        self.scene.addItem(proxy_button)
-        #layout.addLayout(conteiner_zoom_buttons)'''
+        
 
 
         
@@ -271,9 +267,11 @@ class MapWindow(QWidget):
             #    it.setBrush(QBrush(QColor("#3f4e54") if it != item else QColor("#0069b4")))
         
         # executa animação das torres emitindo sinal
+        '''
         for torre in self.lista_execucao_de_ondas:
             torre() # executa a animação
-        self.lista_execucao_de_ondas.clear()
+        self.lista_execucao_de_ondas.clear() # limpa a lista
+        '''
 
     def getDataFromJSON(self, municipio):
         lista_mun = self.carregar_municipios(Recursos.PATH_DADOS) 
@@ -301,15 +299,18 @@ class MapWindow(QWidget):
         #obtem os dados das torres via arquivo.json informado
         lista_mun = self.carregar_municipios("dados.json") 
 
+        
         for mun in lista_mun:
             coord_x = float(mun.get('Longitude')) # extrai as coordenadas
             coord_y = float(mun.get('Latitude'))
-            ellipse = QGraphicsEllipseItem(coord_x, coord_y, 0.02, 0.02) # cria uma elipse/circulo pra representar as torres
+            ellipse = QGraphicsEllipseItem(coord_x, coord_y, Recursos.TAM_CIRCLE_TORRE, Recursos.TAM_CIRCLE_TORRE) # cria uma elipse/circulo pra representar as torres
             ellipse.setBrush(QBrush(Recursos.COR_TORRES)) # cor interna dos circulos
-            ellipse.setPen(QPen(QColor("#000000"), 0.005)) # cor das bordas dos circulos
+            ellipse.setPen(QPen(QColor("#000000"), Recursos.BORDAS_CIRCLE_TORRE)) # cor das bordas dos circulos
             self.scene.addItem(ellipse) # insere no cenario
-            chamada_ao_metodo = self.ondas.create_ripple(QPointF(coord_x, coord_y), True) # cria as ondas emitindo
-            self.lista_execucao_de_ondas.append(chamada_ao_metodo) # salva essa chamada com os parametros atuais para serem executados futuramente em outro contexto (quando usuario selecionar o município).
+            #chamada_ao_metodo = self.ondas.create_ripple(QPointF(coord_x, coord_y), True) # cria as ondas de emissão
+            #chamada_ao_metodo = self.ondas.create_ripple(QPointF(coord_x, coord_y)) # cria as ondas de emissão
+            #self.lista_execucao_de_ondas.append(chamada_ao_metodo) # salva essa chamada com os parametros atuais para serem executados futuramente em outro contexto (quando usuario selecionar o município).
+            self.lista_coord_torres.append(QPointF(coord_x, coord_y))
             
 
     #evento ativado automaticamente quando passar o mouse sobre um municipio              
@@ -320,7 +321,15 @@ class MapWindow(QWidget):
             Região: {self.regiao}<br>
         """)
         self.setStyleSheet(self.recursos.tooltips)
-    
+        
+    def mousePressEvent(self, event):
+        print("im here")
+        #self.view.setVisible(False)
+        for coord in self.lista_coord_torres:
+            self.ondas.create_ripple(coord) 
+
+        
+        return super().mousePressEvent(event)
     
     def setTheme(self):
         if self.enable_theme:
