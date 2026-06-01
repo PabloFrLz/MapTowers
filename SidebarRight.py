@@ -349,7 +349,6 @@ class SidebarRight(QWidget):
                 animacao.start() #inicia a animação
                     
             # [ANIMAÇÃO 2]: empurra os graficos para a esquerda
-            print(f"x({self.widget_graphs.x()}) y({self.widget_graphs.y()})") # a coordenada de self.widget_graphs está mudando de alguma forma que desconheço
             self.animacao_graph.setStartValue(QPoint(400, 150))
             self.animacao_graph.setEndValue(QPoint(10, 150))
             self.animacao_graph.start()

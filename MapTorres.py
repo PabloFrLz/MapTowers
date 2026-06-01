@@ -26,7 +26,7 @@ from typing import List, Dict, Any
 import qdarktheme
 import json
 from PySide6.QtWidgets import (
-    QApplication, QCheckBox, QGraphicsEllipseItem, QGraphicsProxyWidget, QGraphicsTextItem, QPushButton, QScrollArea, QWidget, QVBoxLayout, QGraphicsView, 
+    QApplication, QCheckBox, QGraphicsEllipseItem, QGraphicsProxyWidget, QGraphicsTextItem, QPushButton, QScrollArea, QStackedLayout, QWidget, QVBoxLayout, QGraphicsView, 
     QGraphicsScene, QGraphicsPathItem, QLabel, QHBoxLayout
 )
 from PySide6.QtGui import QFont, QIcon, QPainter, QPen, QBrush, QColor, QPolygonF
@@ -46,8 +46,6 @@ class MapWindow(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout = QHBoxLayout()
-
-        
         
         #  __________________________
         # |     CRIANDO SIDEBARS     |
@@ -84,10 +82,14 @@ class MapWindow(QWidget):
         self.main_layout.addWidget(self.sidebar_right, stretch=1) # insere a sidebar da direita
         layout.addLayout(self.main_layout)
         
+
         
         self.lista_execucao_de_ondas = []
         self.lista_coord_torres = []
+        #self.map_layout.addWidget(self.ondas)
+        #self.map_layout.setStackingMode(QStackedLayout.StackingMode.StackAll)
         
+
         #  __________________________
         # |     GERANDO O MAPA       |
         # |__________________________|
@@ -157,17 +159,11 @@ class MapWindow(QWidget):
         copyright.setContentsMargins(0,0,200,0)
         #self.scene.addItem(copyright)
 
-         #  _____________________________________________
+        #  _____________________________________________
         # |        OBJETO DE ANIMAÇÃO DAS ONDAS         |
         # |_____________________________________________|
-        self.ondas = Ripple.RippleWidget(self, self.width(), self.height()+300)
+        self.ondas = Ripple.RippleWidget(self.view, self.width(), self.height()+300)
         #self.ondas.setStyleSheet("background-color: transparent;")
-
-        
-        
-
-
-        
 
 
     def carregar_municipios(self, arquivo: str = Recursos.PATH_MUNICIPIOS) -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
@@ -279,7 +275,7 @@ class MapWindow(QWidget):
         for mun in lista_mun:
             nome_municipio = mun.get('NM_MUN')
             if nome_municipio == municipio:
-                print(f"Dados do municipio '{nome_municipio}' encontrado.")
+                print(f"[MapTorres.py]: Dados do municipio '{nome_municipio}' encontrado.")
                 return mun
     
     def wheelEvent(self, event):
@@ -298,19 +294,27 @@ class MapWindow(QWidget):
     def desenhar_torres(self): 
         #obtem os dados das torres via arquivo.json informado
         lista_mun = self.carregar_municipios("dados.json") 
-
-        
         for mun in lista_mun:
             coord_x = float(mun.get('Longitude')) # extrai as coordenadas
             coord_y = float(mun.get('Latitude'))
-            ellipse = QGraphicsEllipseItem(coord_x, coord_y, Recursos.TAM_CIRCLE_TORRE, Recursos.TAM_CIRCLE_TORRE) # cria uma elipse/circulo pra representar as torres
+            #print(f"x1:{coord_x} y1:{coord_y}")
+            ellipse = QGraphicsEllipseItem(0, 0, Recursos.TAM_CIRCLE_TORRE, Recursos.TAM_CIRCLE_TORRE) # cria uma elipse/circulo pra representar as torres
+            ellipse.setPos(coord_x, coord_y)
             ellipse.setBrush(QBrush(Recursos.COR_TORRES)) # cor interna dos circulos
             ellipse.setPen(QPen(QColor("#000000"), Recursos.BORDAS_CIRCLE_TORRE)) # cor das bordas dos circulos
             self.scene.addItem(ellipse) # insere no cenario
             #chamada_ao_metodo = self.ondas.create_ripple(QPointF(coord_x, coord_y), True) # cria as ondas de emissão
             #chamada_ao_metodo = self.ondas.create_ripple(QPointF(coord_x, coord_y)) # cria as ondas de emissão
             #self.lista_execucao_de_ondas.append(chamada_ao_metodo) # salva essa chamada com os parametros atuais para serem executados futuramente em outro contexto (quando usuario selecionar o município).
-            self.lista_coord_torres.append(QPointF(coord_x, coord_y))
+            
+            pos_ellipse_cena = ellipse.scenePos()
+            pos_view_map = self.view.mapFromScene(pos_ellipse_cena)
+            #print(f"x({item.x()})   y({item.y()})")
+            #item2 = ellipse.pos()
+            #print(f"x2({item2.x()})   y2({item2.y()})")
+            self.lista_coord_torres.append(pos_view_map)
+            print(f"Torre posicionada em: X={pos_ellipse_cena.x():.6f} | Y={pos_ellipse_cena.y():.6f}")
+            
             
 
     #evento ativado automaticamente quando passar o mouse sobre um municipio              
@@ -322,15 +326,16 @@ class MapWindow(QWidget):
         """)
         self.setStyleSheet(self.recursos.tooltips)
         
+
     def mousePressEvent(self, event):
-        print("im here")
         #self.view.setVisible(False)
+        print("__________________|||____________________")
         for coord in self.lista_coord_torres:
             self.ondas.create_ripple(coord) 
-
-        
+            
         return super().mousePressEvent(event)
     
+
     def setTheme(self):
         if self.enable_theme:
             self.btn_theme.setIcon(self.icon_btn_on) # altera imagem do ícone para on

@@ -27,7 +27,7 @@ class MplCanvas(FigureCanvas):
         self.axes.set_ylabel("Eixo Y", color='white')
         self.axes.grid(True, color = 'gray', alpha=0.1)
         self.axes.tick_params(colors='white')
-        print("Gráfico gerado!")
+        print("[MplCanvas.py]: Gráfico gerado!")
         
         
 

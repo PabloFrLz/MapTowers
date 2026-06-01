@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QApplication
+from PySide6.QtWidgets import QGraphicsItem, QWidget, QApplication
 from PySide6.QtCore import Qt, QTimer, QPointF
 from PySide6.QtGui import QPaintEvent, QPainter, QColor, QPen
 import math
@@ -9,7 +9,7 @@ import sys
 
 
 class Ripple:
-    def __init__(self, x, y, radius=2.0, max_radius=60.0, opacity=1.0, speed=1.8, diametro_linha_circulo=1):
+    def __init__(self, x, y, radius=2.0, max_radius=50.0, opacity=1.0, speed=1.8, diametro_linha_circulo=1):
         self.x = x
         self.y = y
         self.radius = radius
@@ -19,16 +19,20 @@ class Ripple:
         self.diametro_linha_circulo = diametro_linha_circulo
 
 
-class RippleWidget(QWidget):
+class RippleWidget(QWidget, QGraphicsItem):
     def __init__(self, parent, width, height):
         super().__init__(parent)
         self.setMinimumSize(width, height)
-        self.setAttribute(Qt.WA_TransparentForMouseEvents, True)  # ← importante
+        #self.setFixedSize(self.parent().width(), self.parent().height())  # ou algo similar
+        self.setAttribute(Qt.WA_TransparentForMouseEvents, True)  # importante para transparecer
         self.setAttribute(Qt.WA_NoSystemBackground, True)
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setStyleSheet("background: transparent;")  # fundo transparente
         
+        
         self.ripples = []
+
+        
         # Timer para animação suave
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update)
@@ -38,18 +42,20 @@ class RippleWidget(QWidget):
         self.spawn_timer = QTimer(self)
         self.spawn_timer.timeout.connect(self.create_ripple)
         self.spawn_timer.start(800)  # nova onda a cada 800ms
+        
 
     
     def create_ripple(self, pos=None):
-        '''
+        if pos is not None:
+            self.ripples.append(Ripple(pos.x(), pos.y()))
+            #print(f"Xtorres:{pos.x()} Ytorres:{pos.y()}")
+
         if pos is None:
             # Cria no centro por padrão
             pos = QPointF(self.width() / 2, self.height() / 2)
-        '''
-        if pos is not None:
+            #print(f"Xcenter:{self.width() / 2} Ycenter:{self.height() / 2}")
             self.ripples.append(Ripple(pos.x(), pos.y()))
-            print(f"x:{pos.x()} y:{pos.y()}")
-        #print("im execute that")
+        
     
     '''
     def create_ripple(self, pos=None, isTorres=None):
