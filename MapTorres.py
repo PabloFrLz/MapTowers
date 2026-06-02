@@ -26,7 +26,7 @@ from typing import List, Dict, Any
 import qdarktheme
 import json
 from PySide6.QtWidgets import (
-    QApplication, QCheckBox, QFrame, QGraphicsEllipseItem, QGraphicsProxyWidget, QGraphicsRectItem, QGraphicsTextItem, QPushButton, QScrollArea, QStackedLayout, QWidget, QVBoxLayout, QGraphicsView, 
+    QApplication, QCheckBox, QFrame, QGraphicsEllipseItem, QGraphicsOpacityEffect, QGraphicsProxyWidget, QGraphicsRectItem, QGraphicsTextItem, QPushButton, QScrollArea, QStackedLayout, QWidget, QVBoxLayout, QGraphicsView, 
     QGraphicsScene, QGraphicsPathItem, QLabel, QHBoxLayout
 )
 from PySide6.QtGui import QFont, QIcon, QPainter, QPen, QBrush, QColor, QPolygonF, QTransform
@@ -90,7 +90,7 @@ class MapWindow(QWidget):
         #self.ondas.setStyleSheet("background-color: transparent;")
         self.lista_coord_torres = [] # lista de tuplas para armazenar a coordenada das torres de todos os municipios e seu respectivo nome
         self.lista_coord_mun = [] # lista de coordenadas de um municipio especifico que serão animadas
-        self.spawn_timer = None # timer da animação das ondas
+        self.temporizador_ondas = None # timer da animação das ondas
         #self.map_layout.addWidget(self.ondas)
         #self.map_layout.setStackingMode(QStackedLayout.StackingMode.StackAll)
         
@@ -175,6 +175,26 @@ class MapWindow(QWidget):
         self.widget_legendas.setStyleSheet(self.recursos.style_qframe_1)
 
 
+        #  _______________________________
+        # |        TEMPORIZADORES         |
+        # |_______________________________|
+        # temporizador para criar as ondas de animação no mapa
+        self.temporizador_ondas = QTimer(self)
+        self.temporizador_ondas.timeout.connect(self.create_another_onda)
+        # temporizador das animações de transição suave entre as imagens de fundo das sidebars
+        self.temporizador_transicao = QTimer(self)
+        self.temporizador_transicao.timeout.connect(self.transitionAnimation)
+
+        # define os efeitos pra possibilitar a animação de transição
+        self.efeito = QGraphicsOpacityEffect() # infelizmente nao pode usar o mesmo objeto pra dois objetos ao mesmo tempo
+        self.efeito2 = QGraphicsOpacityEffect()
+        self.efeito.setOpacity(1.0) # define a opacidade padrão
+        self.efeito2.setOpacity(1.0) # define a opacidade padrão
+        self.sidebar_right.painel_direito.setGraphicsEffect(self.efeito) # aplica o efeito de opacidade no painel direito da sidebar
+        self.sidebar_left.painel_esquerdo.setGraphicsEffect(self.efeito2) # aplica o efeito de opacidade no painel esquerdo da sidebar
+        
+
+
     def carregar_municipios(self, arquivo: str = Recursos.PATH_MUNICIPIOS) -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
         with open(arquivo, "r", encoding="utf-8") as f:
             dados = json.load(f)
@@ -245,9 +265,8 @@ class MapWindow(QWidget):
 
     
     def show_sidebar(self, item: QGraphicsPathItem): 
-        if self.spawn_timer is not None:
-            self.spawn_timer.stop() # interrompe o timer parando o loop das animações atuais
-            self.spawn_timer = None
+        if self.temporizador_ondas is not None:
+            self.temporizador_ondas.stop() # interrompe o timer parando o loop das animações atuais
             self.lista_coord_mun.clear() # limpa a lista 
 
         if not self.sidebar_right.enable_graphs: # para corrigir um bug onde ao clicar no mapa com a barra escondida ela retrocedia pra uma posição incorreta
@@ -284,9 +303,7 @@ class MapWindow(QWidget):
                 self.lista_coord_mun.append(QPointF(torre[1].x(), torre[1].y())) # insere as coord. das torres do municipio para serem animadas
         
         #cria um timer pra ficar colocando a animação em loop
-        self.spawn_timer = QTimer(self)
-        self.spawn_timer.timeout.connect(self.create_another_onda)
-        self.spawn_timer.start(800)  # nova onda a cada 800ms
+        self.temporizador_ondas.start(800)  # nova onda a cada 800ms
         
 
     def getDataFromJSON(self, municipio):
@@ -365,6 +382,11 @@ class MapWindow(QWidget):
             #self.sidebar_right.btn_graficos.setStyleSheet(self.recursos.buttons_style)
             #self.sidebar_right.btn_animation.setStyleSheet(self.recursos.buttons_style)
             
+            # inicia a animação de transição suave
+            self.efeito.setOpacity(Recursos.CONST_OPACITY_SPEED) #define a opacidade inicial em preparação pra animação de transição suave
+            self.efeito2.setOpacity(Recursos.CONST_OPACITY_SPEED) 
+            self.temporizador_transicao.start(Recursos.CONST_UPDATE_MS) # 30ms para criar um efeito de transição suave entre as imagens de fundo
+            
         else:
             self.btn_theme.setIcon(self.icon_btn_off) # altera imagem do ícone para off
             self.sidebar_left.painel_esquerdo.setStyleSheet(self.recursos.style_theme_1_aux)
@@ -372,6 +394,11 @@ class MapWindow(QWidget):
             self.sidebar_right.background.setPixmap(self.sidebar_right.image_1) # define a 1ª imagem como padrão
             #self.sidebar_right.btn_graficos.setStyleSheet(self.recursos.buttons_style)
             #self.sidebar_right.btn_animation.setStyleSheet(self.recursos.buttons_style)
+
+            # inicia a animação de transição suave
+            self.efeito.setOpacity(Recursos.CONST_OPACITY_SPEED) #define a opacidade inicial em preparação pra animação de transição suave
+            self.efeito2.setOpacity(Recursos.CONST_OPACITY_SPEED) 
+            self.temporizador_transicao.start(Recursos.CONST_UPDATE_MS) # 30ms para criar um efeito de transição suave entre as imagens de fundo
 
         self.enable_theme = not self.enable_theme # inverte
 
@@ -399,6 +426,27 @@ class MapWindow(QWidget):
             linha.addWidget(quadrado)
             linha.addWidget(texto)
             self.conteiner_legenda.addLayout(linha)
+
+    def transitionAnimation(self):
+        opacidade_atual = self.efeito.opacity() # obtem a opacidade atual
+        opacidade_atual_2 = self.efeito2.opacity() # obtem a opacidade atual do segundo efeito
+        if opacidade_atual >= 1.0 and opacidade_atual_2 >= 1.0:
+            self.temporizador_transicao.stop() # para o timer quando a opacidade atingir 1.0 (totalmente visível)
+        else:
+            if opacidade_atual < 1.0: # evita soma além de 1.0 que pode causar bug visual
+                self.efeito.setOpacity(opacidade_atual + Recursos.CONST_OPACITY_SPEED) # soma a opacidade atual mais a constante de velocidade da animação que normalmente é um valor bem baixo (0.01)
+            if opacidade_atual_2 < 1.0:
+                self.efeito2.setOpacity(opacidade_atual_2 + Recursos.CONST_OPACITY_SPEED) # soma a opacidade atual mais a constante de velocidade da animação que normalmente é um valor bem baixo (0.01)
+
+
+        '''
+        opacidade_atual = self.sidebar_right.painel_direito.windowOpacity() # obtem a opacidade atual
+        print(f"why am i not here ???? {opacidade_atual}")
+        if opacidade_atual >= 1.0:
+            self.temporizador_transicao.stop() # para o timer quando a opacidade atingir 1.0 (totalmente visível)
+        else:
+            self.sidebar_right.painel_direito.setWindowOpacity(opacidade_atual + Recursos.CONST_OPACITY_SPEED) # soma a opacidade atual mais a constante de velocidade da animação que normalmente é um valor bem baixo (0.01) 
+        '''
 
 
             

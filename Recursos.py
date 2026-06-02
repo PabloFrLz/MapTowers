@@ -31,6 +31,8 @@ BORDAS_CIRCLE_TORRE = 0.005
 
 # PARAMÊTROS P/ ANIMAÇÕES
 DURATION_ANIMATION_SLIDE = 1000
+CONST_OPACITY_SPEED = 0.02
+CONST_UPDATE_MS = 30 # 30ms para criar um efeito de transição suave entre as imagens de fundo
 
 class Recursos():
     def __init__(self):
