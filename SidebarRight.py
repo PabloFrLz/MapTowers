@@ -52,14 +52,6 @@ class SidebarRight(QWidget):
         self.background.setAlignment(Qt.AlignmentFlag.AlignCenter) # alinhar ao centro
         #self.background.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False) # permite que outros widgets fiquem por cima  
 
-        #atributos da classe - apenas informações técnicas - informações sobre torres estará na outra sidebar
-        '''
-        self.fid = QLineEdit("...")
-        self.cd_mun = QLineEdit("...")
-        self.nm_mun = QLineEdit("...")
-        self.latitude = QLineEdit("...")
-        self.longitude = QLineEdit("...")
-        '''
 
          #  _________________________________________
          # |         GERANDO AS INFORMAÇÕES          |
@@ -67,7 +59,6 @@ class SidebarRight(QWidget):
          
         #dados do municipio
         self.municipio = QLineEdit("...")
-        self.fid = QLineEdit("...")
         self.cd_mun = QLineEdit("...")
         self.regiao = QLineEdit("...")
         self.ddd = QLineEdit("...")
@@ -86,7 +77,6 @@ class SidebarRight(QWidget):
 
         # conteiner + Qlabel + QLineEdit pra gerar o campo de informações da sidebar da direita
         self.municipio_conteiner = self.gerarCampoDeInformacao("MUNICÍPIO:", self.municipio)
-        self.fid_conteiner = self.gerarCampoDeInformacao("FID:", self.fid)
         self.cd_mun_conteiner = self.gerarCampoDeInformacao("CD_MUN:", self.cd_mun)
         self.regiao_conteiner = self.gerarCampoDeInformacao("REGIÃO:", self.regiao)
         self.ddd_conteiner = self.gerarCampoDeInformacao("DDD:", self.ddd)
@@ -106,15 +96,15 @@ class SidebarRight(QWidget):
          # |__________________________|
          # cria o 1º grupo que conterá dados do municipio
         # colocar informações especificas uma ao lado da outra pra economiza espaço da sidebar da direita
-        self.conteiner_comprimido_1 = self.agrupandoInfos(self.cd_mun_conteiner, self.fid_conteiner)
-        self.conteiner_comprimido_2 = self.agrupandoInfos(self.regiao_conteiner, self.ddd_conteiner)
+        self.conteiner_comprimido_1 = self.agrupandoInfos(self.cd_mun_conteiner, self.ddd_conteiner)
+        #self.conteiner_comprimido_2 = self.agrupandoInfos(self.regiao_conteiner, self.ddd_conteiner)
         self.titulo1 = QLabel("MUNICÍPIO")
         self.titulo1.setStyleSheet(self.recursos.titulos)
         self.group_1 = QVBoxLayout()
         self.group_1.addWidget(self.titulo1)
         self.group_1.addItem(self.municipio_conteiner)
         self.group_1.addItem(self.conteiner_comprimido_1)
-        self.group_1.addItem(self.conteiner_comprimido_2)
+        #self.group_1.addItem(self.conteiner_comprimido_2)
         self.group_1.addItem(self.populacao_conteiner)
         # Envolver o grupo em um QFrame para aplicar stylesheet pra inserir um fundo escuro com opacidade
         self.grupo_com_background_1 = QFrame()
@@ -272,7 +262,6 @@ class SidebarRight(QWidget):
     def setAtributo(self, nome_atributo, val): # atualiza valores dos dados
         valor = str(val) 
         if nome_atributo == self.recursos.indice_dados[2]: self.municipio.setText(valor)
-        if nome_atributo == self.recursos.indice_dados[0]: self.fid.setText(valor) 
         if nome_atributo == self.recursos.indice_dados[1]: self.cd_mun.setText(valor) 
         if nome_atributo == self.recursos.indice_dados[1]: self.regiao.setText("...")
         if nome_atributo == self.recursos.indice_dados[22]: self.ddd.setText(valor)

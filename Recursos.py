@@ -13,9 +13,13 @@ COR_PADRAO = QColor("#555555")
 COR_PADRAO_2 = QColor("#3f4e54")
 AZUL_PARANA = QColor("#3388ff")
 VERDE_PARANA = QColor("#008b3b")
-COR_TORRE_NORMAL = QColor("#d80000")
+COR_TORRE_NORMAL = QColor("#221616")
 COR_TORRE_ANDAMENTO = QColor("#D47800")
 COR_TORRE_ATIVA = VERDE_PARANA
+COR_TORRE_CLARO = QColor("#ff010a") # cor da operadora claro
+COR_TORRE_VIVO = QColor("#b810c4") # cor da operadora vivo
+COR_TORRE_TIM = QColor("#003bb9") # cor da operadora tim
+COR_TORRE_LIGGA = QColor("#ff4c00") # cor da operadora ligga
 
 #CORES PARA REGIÕES:
 COR_REGIAO_CURITIBA = QColor("#555555")
@@ -71,6 +75,9 @@ class Recursos():
         self.path_button_graphics_show = "imagens/graphs_show.png"
         self.path_animation_off = "imagens/settings_off.png"
         self.path_animation_on = "imagens/settings_on.png"
+
+        self.path_button_view_torres_off = "imagens/view_torres_off.png"
+        self.path_button_view_torres_on = "imagens/view_torres_on.png"
 
         #  __________________________
         # |         ESTILOS          |

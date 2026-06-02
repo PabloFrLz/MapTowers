@@ -84,15 +84,21 @@ class MapWindow(QWidget):
         
 
         #  _____________________________________________
-        # |        OBJETO DE ANIMAÇÃO DAS ONDAS         |
+        # |        REFERENTE A ANIMAÇÃO DAS ONDAS       |
         # |_____________________________________________|
         #self.ondas = Ripple.RippleWidget(self.view, self.width(), self.height()+300)
         #self.ondas.setStyleSheet("background-color: transparent;")
+        self.lista_torres = [] # lista de objetos gráficos das torres para futuras manipulações
         self.lista_coord_torres = [] # lista de tuplas para armazenar a coordenada das torres de todos os municipios e seu respectivo nome
         self.lista_coord_mun = [] # lista de coordenadas de um municipio especifico que serão animadas
         self.temporizador_ondas = None # timer da animação das ondas
         #self.map_layout.addWidget(self.ondas)
         #self.map_layout.setStackingMode(QStackedLayout.StackingMode.StackAll)
+
+        #  _______________________________________________________
+        # |        PERSPECTIVA DE VISUALIZAÇÃO DAS TORRES         |
+        # |_______________________________________________________|
+        self.enable_operadoras_view = False # variavel de controle que habilitará a pintura das torres de acordo com a cor da operadora
         
 
         #  __________________________
@@ -105,9 +111,9 @@ class MapWindow(QWidget):
         
         
 
-        #  __________________________
-        # |       BOTÕES ZOOM        |
-        # |__________________________|
+        #  __________________________________________
+        # |       BOTÕES ZOOM, THEMA E ADEMAIS       |
+        # |__________________________________________|
         conteiner_buttons = QWidget()
         layout_buttons = QHBoxLayout(conteiner_buttons) #horizontal pois ficaram um do lado do outro
         #button zoom in
@@ -127,11 +133,18 @@ class MapWindow(QWidget):
         self.btn_theme.setIcon(self.icon_btn_off)
         self.btn_theme.clicked.connect(self.setTheme)
         self.enable_theme = True # variavel de controle do tema
+        # button pra troca de visualização entre torres por status e torres por operadora
+        self.btn_view_torres = QPushButton(self)
+        self.icon_btn_torres_off = QIcon(self.recursos.path_button_view_torres_off)
+        self.icon_btn_torres_on = QIcon(self.recursos.path_button_view_torres_on)
+        self.btn_view_torres.setIcon(self.icon_btn_torres_off)
+        self.btn_view_torres.clicked.connect(self.fluxo_alternar_operadoras_view)
 
         # insere os buttons no conteiner e centraliza
         layout_buttons.addWidget(self.btn_zoom_in) 
         layout_buttons.addWidget(self.btn_zoom_out)
         layout_buttons.addWidget(self.btn_theme)
+        layout_buttons.addWidget(self.btn_view_torres)
         layout_buttons.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Insere os botões dentro do container do mapa e centraliza horizontalmente
@@ -169,10 +182,17 @@ class MapWindow(QWidget):
         # |_______________________________|
         self.widget_legendas =  QFrame(self.view.viewport()) # insere o widget dentro da area do mapa pra ficar por cima dele e não ser afetada pelo zoom
         self.conteiner_legenda = QVBoxLayout(self.widget_legendas) # conteiner lateral pra agrupar um em baixo do outro
-        self.conteiner_legenda = self.generateLegenda() # gera a legenda das torres e demais itens futuros do mapa
+        self.generateLegenda() # gera a legenda das torres e demais itens futuros do mapa
         #self.map_container.layout().addWidget(self.widget_legendas, alignment=Qt.AlignmentFlag.AlignLeft) # insere a legenda no container do mapa e alinha à esquerda
-        self.widget_legendas.move(900, 700)
+        self.widget_legendas.move(850, 700)
         self.widget_legendas.setStyleSheet(self.recursos.style_qframe_1)
+
+        self.widget_legendas_2 =  QFrame(self.view.viewport()) # insere o widget dentro da area do mapa pra ficar por cima dele e não ser afetada pelo zoom
+        self.conteiner_legenda_2 = QVBoxLayout(self.widget_legendas_2) # conteiner lateral pra agrupar um em baixo do outro
+        self.generateLegendaTorres() # gera a legenda das torres e demais itens futuros do mapa
+        #self.map_container.layout().addWidget(self.widget_legendas, alignment=Qt.AlignmentFlag.AlignLeft) # insere a legenda no container do mapa e alinha à esquerda
+        self.widget_legendas_2.move(1050, 652)
+        self.widget_legendas_2.setStyleSheet(self.recursos.style_qframe_1)
 
 
         #  _______________________________
@@ -192,6 +212,7 @@ class MapWindow(QWidget):
         self.efeito2.setOpacity(1.0) # define a opacidade padrão
         self.sidebar_right.painel_direito.setGraphicsEffect(self.efeito) # aplica o efeito de opacidade no painel direito da sidebar
         self.sidebar_left.painel_esquerdo.setGraphicsEffect(self.efeito2) # aplica o efeito de opacidade no painel esquerdo da sidebar
+        
         
 
 
@@ -223,14 +244,15 @@ class MapWindow(QWidget):
             # Configurações visuais
             #path_item.setBrush(QBrush(AZUL_PARANA if mun.get('fundo') != "Não" else COR_PADRAO)) # pinta com a cor normal caso o municipio tenha registrado fundos
             path_item.setBrush(QBrush(Recursos.COR_PADRAO)) # cor inicial do mapa
-            '''
+            
             # descomentar caso queira implementar cores diferentes dado região do paraná
-            if mun.get('regiao') == "curitiba": path_item.setBrush(QBrush(COR_REGIAO_CURITIBA))
-            elif mun.get('regiao') == "cascavel": path_item.setBrush(QBrush(COR_REGIAO_CASCAVEL))
-            elif mun.get('regiao') == "londrina": path_item.setBrush(QBrush(COR_REGIAO_LONDRINA))
-            elif mun.get('regiao') == "ponta-grossa": path_item.setBrush(QBrush(COR_REGIAO_PONTAGROSSA))
-            elif mun.get('regiao') == "maringa": path_item.setBrush(QBrush(COR_REGIAO_MARINGA))
-            elif mun.get('regiao') == "guarapuava": path_item.setBrush(QBrush(COR_REGIAO_GUARAPUAVA))
+            '''
+            if mun.get('regiao') == "curitiba": path_item.setBrush(QBrush(Recursos.COR_REGIAO_CURITIBA))
+            elif mun.get('regiao') == "cascavel": path_item.setBrush(QBrush(Recursos.COR_REGIAO_CASCAVEL))
+            elif mun.get('regiao') == "londrina": path_item.setBrush(QBrush(Recursos.COR_REGIAO_LONDRINA))
+            elif mun.get('regiao') == "ponta-grossa": path_item.setBrush(QBrush(Recursos.COR_REGIAO_PONTAGROSSA))
+            elif mun.get('regiao') == "maringa": path_item.setBrush(QBrush(Recursos.COR_REGIAO_MARINGA))
+            elif mun.get('regiao') == "guarapuava": path_item.setBrush(QBrush(Recursos.COR_REGIAO_GUARAPUAVA))
             '''
             
             path_item.setPen(pen)
@@ -338,18 +360,36 @@ class MapWindow(QWidget):
             ellipse = QGraphicsEllipseItem(0, 0, Recursos.TAM_CIRCLE_TORRE, Recursos.TAM_CIRCLE_TORRE) # cria uma elipse/circulo pra representar as torres
             ellipse.setPos(coord_x, coord_y) # posiciona a torre na interface
 
-            status = mun.get('Status') # vê qual o status da torre atual pra pintá-la de acordo no mapa
-            if(status == "Em Andamento"):
-                cor = Recursos.COR_TORRE_ANDAMENTO
-            elif(status == "ATIVO"):
-                cor = Recursos.COR_TORRE_ATIVA
-            else:
-                cor = Recursos.COR_TORRE_NORMAL
+            cor = self.identifica_operadora(mun) # identifica a operadora da torre pra pintar com a cor correspondente
+
             ellipse.setBrush(QBrush(cor)) # cor interna dos circulos
             ellipse.setPen(QPen(QColor("#000000"), Recursos.BORDAS_CIRCLE_TORRE)) # cor das bordas dos circulos
             self.scene.addItem(ellipse) # insere no cenario
-
             self.lista_coord_torres.append([mun.get('Município'), QPointF(coord_x, coord_y)]) # salva uma tupla com o nome do municipio e as coordenadas xy da torre inserida na GUI        
+            self.lista_torres.append(ellipse) # salva o objeto gráfico da torre para futuras manipulações como exclusão se necessário ou mudança de cor por exemplo
+
+    def identifica_operadora(self, mun):
+        if self.enable_operadoras_view: # se a visualização por operadoras estiver habilitada, pinta as torres de acordo com a cor da operadora
+            operadora = mun.get('Operadora') # obtem o nome da operadora da torre
+            if  (operadora == "Claro"): cor = Recursos.COR_TORRE_CLARO
+            elif(operadora == "Vivo"): cor = Recursos.COR_TORRE_VIVO
+            elif(operadora == "Tim" or operadora == "Tim (Terezinha)"): cor = Recursos.COR_TORRE_TIM
+            elif(operadora == "Ligga"): cor = Recursos.COR_TORRE_LIGGA
+            else: cor = Recursos.COR_TORRE_NORMAL # para o caso que nao tenha o nome da operadora ou seja um nome diferente dos previstos, pinta com a cor normal
+        else:
+            status = mun.get('Status') # vê qual o status da torre atual pra pintá-la de acordo no mapa
+            if  (status == "Em Andamento"): cor = Recursos.COR_TORRE_ANDAMENTO
+            elif(status == "ATIVO"): cor = Recursos.COR_TORRE_ATIVA
+            else: cor = Recursos.COR_TORRE_NORMAL
+
+        return cor
+    
+    def fluxo_alternar_operadoras_view(self): # método para alternar entre a visualização por status e por operadora
+        if self.enable_operadoras_view: self.btn_view_torres.setIcon(self.icon_btn_torres_off) # altera imagem do ícone para off
+        else: self.btn_view_torres.setIcon(self.icon_btn_torres_on) # altera imagem do ícone para on
+        self.enable_operadoras_view = not self.enable_operadoras_view # inverte a variável de controle para alternar entre as visualizações
+        self.lista_torres.clear() # limpa a lista de torres
+        self.desenhar_torres() # redesenha as torres com as cores atualizadas de acordo com a variável de controle 'enable_operadoras_view'
 
     #evento ativado automaticamente quando passar o mouse sobre um municipio              
     def hoverEnterEvent(self):
@@ -403,29 +443,49 @@ class MapWindow(QWidget):
         self.enable_theme = not self.enable_theme # inverte
 
     # metodo reciclado do outro projeto SEIAParkingManagement
-    def generateLegenda(self): # gera a legenda das cores pra se orientar melhor
+    def generateLegenda(self): # gera a legenda dos status das torres
         #self.legendas = QVBoxLayout() # conteiner lateral pra agrupar um em baixo do outro
         self.legendas = []
         descricao = ["Torres inativas - em andamento", 
                   "Torres ativas"]
-        pen = [Recursos.COR_TORRE_ANDAMENTO, Recursos.COR_TORRE_ATIVA]
-        brush = [Recursos.COR_TORRE_ANDAMENTO, Recursos.COR_TORRE_ATIVA]
+        color = [Recursos.COR_TORRE_ANDAMENTO, Recursos.COR_TORRE_ATIVA]
 
         #conteiner = QVBoxLayout() # conteiner lateral pra agrupar um em baixo do outro
 
-        for i in range(2):
+        for i in range(len(descricao)):
             linha = QHBoxLayout()
 
             quadrado = QFrame()
             quadrado.setFixedSize(15, 10)
             quadrado.setStyleSheet(f"""
-                background-color: {brush[i].name()};
+                background-color: {color[i].name()};
                 border: 1px solid black;
             """)
             texto = QLabel(descricao[i])
             linha.addWidget(quadrado)
             linha.addWidget(texto)
             self.conteiner_legenda.addLayout(linha)
+    
+    def generateLegendaTorres(self): # gera a legenda das torres 
+        self.legendas = []
+        descricao = ["Claro", "Tim", "Vivo", "Ligga"]
+        color = [Recursos.COR_TORRE_CLARO, Recursos.COR_TORRE_TIM, Recursos.COR_TORRE_VIVO, Recursos.COR_TORRE_LIGGA]
+
+        #conteiner = QVBoxLayout() # conteiner lateral pra agrupar um em baixo do outro
+
+        for i in range(len(descricao)):
+            linha = QHBoxLayout()
+
+            quadrado = QFrame()
+            quadrado.setFixedSize(15, 10)
+            quadrado.setStyleSheet(f"""
+                background-color: {color[i].name()};
+                border: 1px solid black;
+            """)
+            texto = QLabel(descricao[i])
+            linha.addWidget(quadrado)
+            linha.addWidget(texto)
+            self.conteiner_legenda_2.addLayout(linha)
 
     def transitionAnimation(self):
         opacidade_atual = self.efeito.opacity() # obtem a opacidade atual
