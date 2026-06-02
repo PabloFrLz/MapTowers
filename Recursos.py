@@ -13,7 +13,9 @@ COR_PADRAO = QColor("#555555")
 COR_PADRAO_2 = QColor("#3f4e54")
 AZUL_PARANA = QColor("#3388ff")
 VERDE_PARANA = QColor("#008b3b")
-COR_TORRES = QColor("#d80000")
+COR_TORRE_NORMAL = QColor("#d80000")
+COR_TORRE_ANDAMENTO = QColor("#D47800")
+COR_TORRE_ATIVA = VERDE_PARANA
 
 #CORES PARA REGIÕES:
 COR_REGIAO_CURITIBA = QColor("#555555")
@@ -308,6 +310,19 @@ class Recursos():
             border: 1px solid rgba(255, 255, 255, 0.1);
             opacity: 230;
 
+        """
+
+        self.buttons_style = """
+            QPushButton {
+                background: rgba(20, 20, 30, 0.45);
+                border-radius: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }"""
+        
+        self.legenda_style = """
+            background-color: rgba(20, 20, 30, 0.45);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         """
         
 

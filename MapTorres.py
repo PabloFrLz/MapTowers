@@ -26,14 +26,14 @@ from typing import List, Dict, Any
 import qdarktheme
 import json
 from PySide6.QtWidgets import (
-    QApplication, QCheckBox, QGraphicsEllipseItem, QGraphicsProxyWidget, QGraphicsTextItem, QPushButton, QScrollArea, QStackedLayout, QWidget, QVBoxLayout, QGraphicsView, 
+    QApplication, QCheckBox, QFrame, QGraphicsEllipseItem, QGraphicsProxyWidget, QGraphicsRectItem, QGraphicsTextItem, QPushButton, QScrollArea, QStackedLayout, QWidget, QVBoxLayout, QGraphicsView, 
     QGraphicsScene, QGraphicsPathItem, QLabel, QHBoxLayout
 )
-from PySide6.QtGui import QFont, QIcon, QPainter, QPen, QBrush, QColor, QPolygonF
-from PySide6.QtCore import Qt, QPointF, QRectF
+from PySide6.QtGui import QFont, QIcon, QPainter, QPen, QBrush, QColor, QPolygonF, QTransform
+from PySide6.QtCore import QTimer, Qt, QPointF, QRectF
 from functools import partial
 
-import SidebarRight, SidebarLeft, Recursos, Ripple
+import SidebarRight, SidebarLeft, Recursos, Ripple, RippleItem
 
 class MapWindow(QWidget):
     def __init__(self):
@@ -83,9 +83,14 @@ class MapWindow(QWidget):
         layout.addLayout(self.main_layout)
         
 
-        
-        self.lista_execucao_de_ondas = []
-        self.lista_coord_torres = []
+        #  _____________________________________________
+        # |        OBJETO DE ANIMAÇÃO DAS ONDAS         |
+        # |_____________________________________________|
+        #self.ondas = Ripple.RippleWidget(self.view, self.width(), self.height()+300)
+        #self.ondas.setStyleSheet("background-color: transparent;")
+        self.lista_coord_torres = [] # lista de tuplas para armazenar a coordenada das torres de todos os municipios e seu respectivo nome
+        self.lista_coord_mun = [] # lista de coordenadas de um municipio especifico que serão animadas
+        self.spawn_timer = None # timer da animação das ondas
         #self.map_layout.addWidget(self.ondas)
         #self.map_layout.setStackingMode(QStackedLayout.StackingMode.StackAll)
         
@@ -159,17 +164,22 @@ class MapWindow(QWidget):
         copyright.setContentsMargins(0,0,200,0)
         #self.scene.addItem(copyright)
 
-        #  _____________________________________________
-        # |        OBJETO DE ANIMAÇÃO DAS ONDAS         |
-        # |_____________________________________________|
-        self.ondas = Ripple.RippleWidget(self.view, self.width(), self.height()+300)
-        #self.ondas.setStyleSheet("background-color: transparent;")
+        #  _______________________________
+        # |        LEGENDA DO MAPA        |
+        # |_______________________________|
+        self.widget_legendas =  QFrame(self.view.viewport()) # insere o widget dentro da area do mapa pra ficar por cima dele e não ser afetada pelo zoom
+        self.conteiner_legenda = QVBoxLayout(self.widget_legendas) # conteiner lateral pra agrupar um em baixo do outro
+        self.conteiner_legenda = self.generateLegenda() # gera a legenda das torres e demais itens futuros do mapa
+        #self.map_container.layout().addWidget(self.widget_legendas, alignment=Qt.AlignmentFlag.AlignLeft) # insere a legenda no container do mapa e alinha à esquerda
+        self.widget_legendas.move(900, 700)
+        self.widget_legendas.setStyleSheet(self.recursos.style_qframe_1)
 
 
     def carregar_municipios(self, arquivo: str = Recursos.PATH_MUNICIPIOS) -> List[Dict]: # carrega os dados do arquivo JSON e retorna a lista de municípios
         with open(arquivo, "r", encoding="utf-8") as f:
             dados = json.load(f)
         return dados["municipios"] # retorna a lista de municípios contida no JSON
+
 
     def desenhar_mapa(self, municipios):
         # Cores
@@ -235,6 +245,11 @@ class MapWindow(QWidget):
 
     
     def show_sidebar(self, item: QGraphicsPathItem): 
+        if self.spawn_timer is not None:
+            self.spawn_timer.stop() # interrompe o timer parando o loop das animações atuais
+            self.spawn_timer = None
+            self.lista_coord_mun.clear() # limpa a lista 
+
         if not self.sidebar_right.enable_graphs: # para corrigir um bug onde ao clicar no mapa com a barra escondida ela retrocedia pra uma posição incorreta
             self.sidebar_right.btn_graficos.setIcon(self.sidebar_right.btn_graficos_icon_hide) # altera imagem do ícone para escondido 'hide'
             self.sidebar_right.transitToGraphs()
@@ -251,10 +266,11 @@ class MapWindow(QWidget):
             # stay here!
         
         self.hoverEnterEvent() # mostra o tooltip do municipio
-        # Exemplo: destacar município clicado
+
+        # trecho de destaque ao município clicado
         for it in self.scene.items():
             if isinstance(it, QGraphicsPathItem):
-                it.setBrush(QBrush(Recursos.COR_PADRAO_2 if it != item else Recursos.VERDE_PARANA))
+                it.setBrush(QBrush(Recursos.COR_PADRAO_2 if it != item else Recursos.AZUL_PARANA))
                 if it != item:
                     # atualiza o nome da cidade na sidebar esquerda
                     self.sidebar_left.set_brasao_municipio(self.municipio, "Parana.png")
@@ -262,12 +278,16 @@ class MapWindow(QWidget):
             #elif isinstance(it, QWidget):
             #    it.setBrush(QBrush(QColor("#3f4e54") if it != item else QColor("#0069b4")))
         
-        # executa animação das torres emitindo sinal
-        '''
-        for torre in self.lista_execucao_de_ondas:
-            torre() # executa a animação
-        self.lista_execucao_de_ondas.clear() # limpa a lista
-        '''
+        # trecho relativo as animações de ondas na tela
+        for torre in self.lista_coord_torres:
+            if (torre[0] == self.municipio): # só vai animar as torres do municipio selecionado no mapa
+                self.lista_coord_mun.append(QPointF(torre[1].x(), torre[1].y())) # insere as coord. das torres do municipio para serem animadas
+        
+        #cria um timer pra ficar colocando a animação em loop
+        self.spawn_timer = QTimer(self)
+        self.spawn_timer.timeout.connect(self.create_another_onda)
+        self.spawn_timer.start(800)  # nova onda a cada 800ms
+        
 
     def getDataFromJSON(self, municipio):
         lista_mun = self.carregar_municipios(Recursos.PATH_DADOS) 
@@ -293,29 +313,26 @@ class MapWindow(QWidget):
 
     def desenhar_torres(self): 
         #obtem os dados das torres via arquivo.json informado
-        lista_mun = self.carregar_municipios("dados.json") 
+        lista_mun = self.carregar_municipios("torres_location.json") 
         for mun in lista_mun:
+            #print(mun.get('Longitude'))
             coord_x = float(mun.get('Longitude')) # extrai as coordenadas
             coord_y = float(mun.get('Latitude'))
-            #print(f"x1:{coord_x} y1:{coord_y}")
             ellipse = QGraphicsEllipseItem(0, 0, Recursos.TAM_CIRCLE_TORRE, Recursos.TAM_CIRCLE_TORRE) # cria uma elipse/circulo pra representar as torres
-            ellipse.setPos(coord_x, coord_y)
-            ellipse.setBrush(QBrush(Recursos.COR_TORRES)) # cor interna dos circulos
+            ellipse.setPos(coord_x, coord_y) # posiciona a torre na interface
+
+            status = mun.get('Status') # vê qual o status da torre atual pra pintá-la de acordo no mapa
+            if(status == "Em Andamento"):
+                cor = Recursos.COR_TORRE_ANDAMENTO
+            elif(status == "ATIVO"):
+                cor = Recursos.COR_TORRE_ATIVA
+            else:
+                cor = Recursos.COR_TORRE_NORMAL
+            ellipse.setBrush(QBrush(cor)) # cor interna dos circulos
             ellipse.setPen(QPen(QColor("#000000"), Recursos.BORDAS_CIRCLE_TORRE)) # cor das bordas dos circulos
             self.scene.addItem(ellipse) # insere no cenario
-            #chamada_ao_metodo = self.ondas.create_ripple(QPointF(coord_x, coord_y), True) # cria as ondas de emissão
-            #chamada_ao_metodo = self.ondas.create_ripple(QPointF(coord_x, coord_y)) # cria as ondas de emissão
-            #self.lista_execucao_de_ondas.append(chamada_ao_metodo) # salva essa chamada com os parametros atuais para serem executados futuramente em outro contexto (quando usuario selecionar o município).
-            
-            pos_ellipse_cena = ellipse.scenePos()
-            pos_view_map = self.view.mapFromScene(pos_ellipse_cena)
-            #print(f"x({item.x()})   y({item.y()})")
-            #item2 = ellipse.pos()
-            #print(f"x2({item2.x()})   y2({item2.y()})")
-            self.lista_coord_torres.append(pos_view_map)
-            print(f"Torre posicionada em: X={pos_ellipse_cena.x():.6f} | Y={pos_ellipse_cena.y():.6f}")
-            
-            
+
+            self.lista_coord_torres.append([mun.get('Município'), QPointF(coord_x, coord_y)]) # salva uma tupla com o nome do municipio e as coordenadas xy da torre inserida na GUI        
 
     #evento ativado automaticamente quando passar o mouse sobre um municipio              
     def hoverEnterEvent(self):
@@ -327,13 +344,16 @@ class MapWindow(QWidget):
         self.setStyleSheet(self.recursos.tooltips)
         
 
+    # metodo para debug via click de mouse kkk
     def mousePressEvent(self, event):
-        #self.view.setVisible(False)
-        print("__________________|||____________________")
-        for coord in self.lista_coord_torres:
-            self.ondas.create_ripple(coord) 
-            
+
+        
         return super().mousePressEvent(event)
+    
+    def create_another_onda(self):
+        for coord in self.lista_coord_mun:
+            ripple = RippleItem.RippleItem(coord.x(), coord.y(), max_radius=0.5, speed=0.02)
+            self.scene.addItem(ripple)
     
 
     def setTheme(self):
@@ -341,15 +361,47 @@ class MapWindow(QWidget):
             self.btn_theme.setIcon(self.icon_btn_on) # altera imagem do ícone para on
             self.sidebar_left.painel_esquerdo.setStyleSheet(self.recursos.style_theme_2_aux)
             self.sidebar_right.painel_direito.setStyleSheet(self.recursos.style_theme_2)
+            self.sidebar_right.background.setPixmap(self.sidebar_right.image_2) # define a 2ª imagem como padrão
+            #self.sidebar_right.btn_graficos.setStyleSheet(self.recursos.buttons_style)
+            #self.sidebar_right.btn_animation.setStyleSheet(self.recursos.buttons_style)
             
         else:
             self.btn_theme.setIcon(self.icon_btn_off) # altera imagem do ícone para off
             self.sidebar_left.painel_esquerdo.setStyleSheet(self.recursos.style_theme_1_aux)
             self.sidebar_right.painel_direito.setStyleSheet(self.recursos.style_theme_1)
-        
+            self.sidebar_right.background.setPixmap(self.sidebar_right.image_1) # define a 1ª imagem como padrão
+            #self.sidebar_right.btn_graficos.setStyleSheet(self.recursos.buttons_style)
+            #self.sidebar_right.btn_animation.setStyleSheet(self.recursos.buttons_style)
+
         self.enable_theme = not self.enable_theme # inverte
 
-        
+    # metodo reciclado do outro projeto SEIAParkingManagement
+    def generateLegenda(self): # gera a legenda das cores pra se orientar melhor
+        #self.legendas = QVBoxLayout() # conteiner lateral pra agrupar um em baixo do outro
+        self.legendas = []
+        descricao = ["Torres inativas - em andamento", 
+                  "Torres ativas"]
+        pen = [Recursos.COR_TORRE_ANDAMENTO, Recursos.COR_TORRE_ATIVA]
+        brush = [Recursos.COR_TORRE_ANDAMENTO, Recursos.COR_TORRE_ATIVA]
+
+        #conteiner = QVBoxLayout() # conteiner lateral pra agrupar um em baixo do outro
+
+        for i in range(2):
+            linha = QHBoxLayout()
+
+            quadrado = QFrame()
+            quadrado.setFixedSize(15, 10)
+            quadrado.setStyleSheet(f"""
+                background-color: {brush[i].name()};
+                border: 1px solid black;
+            """)
+            texto = QLabel(descricao[i])
+            linha.addWidget(quadrado)
+            linha.addWidget(texto)
+            self.conteiner_legenda.addLayout(linha)
+
+
+            
 
 # ====================== EXECUÇÃO ======================
 if __name__ == "__main__":

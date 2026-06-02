@@ -43,9 +43,12 @@ class SidebarRight(QWidget):
 
         #conteiner vertical pra agrupar os elementos textuais
         self.layout_principal = QVBoxLayout() 
+        self.image_1 = QPixmap("imagens/logo_seia_sidebar_full.png").scaled(200, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.image_2 = QPixmap("imagens/dri_logo_concept_13.png").scaled(200, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.background = QLabel()# background de topo da sidebar da esquerda
-        self.background.setPixmap(QPixmap("imagens/logo_seia_sidebar_full.png").scaled(200, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)) 
-        self.background.setFixedWidth(280) #fixando manualmente a largura pra caber na interface
+        self.background.setPixmap(self.image_1) # define a 1ª imagem como padrão
+        self.background.setFixedWidth(280) #fixando manualmente a largura pra se encaixar melhor na interface
+        self.painel_direito.setFixedHeight(Recursos.HEIGHT+200)
         self.background.setAlignment(Qt.AlignmentFlag.AlignCenter) # alinhar ao centro
         #self.background.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False) # permite que outros widgets fiquem por cima  
 
@@ -190,11 +193,7 @@ class SidebarRight(QWidget):
         self.btn_animation.setIconSize(QSize(100, 20))
         self.layout_principal.insertLayout(1, self.conteiner_buttons_sidebar_right) # insere o widget na segunda posição do conteiner, abaixo da logo principal da secretaria ou diretoria (depende do tema)
         
-        #self.btn_graficos.setParent(self.painel_direito)
-        #self.btn_graficos.setGeometry(Recursos.WIDTH - 50, Recursos.HEIGHT-600, 50, 50)
-        # ou
-        #self.btn_graficos.move(Recursos.WIDTH - 50, Recursos.HEIGHT-600)
-
+        
         #  _______________________________________
         # |     ANIMAÇÃO DE TRANSIÇÃO DE TELA     |
         # |_______________________________________|
@@ -230,6 +229,10 @@ class SidebarRight(QWidget):
         self.painel_direito.setStyleSheet(self.recursos.style_theme_1)
         #estilo de gradient do background superior onde vai a logo do estado do paraná
         self.background.setStyleSheet(self.recursos.card_board_gradient_vertical)
+        # aplicando efeito nos botoes
+        self.btn_graficos.setStyleSheet(self.recursos.buttons_style)
+        self.btn_animation.setStyleSheet(self.recursos.buttons_style)
+
         # Configurações adicionais
         self.setStyleSheet("""
             QLineEdit {
