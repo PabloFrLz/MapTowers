@@ -5,10 +5,10 @@ Artificial (SEIA), do estado do Paraná. Foi pensado de modo a complementar as a
 mostrar a disposição das torres do programa de Conectividade Rural, a cobertura das operadoras nas regiões de interesse e
 demais informações.
 ```
-**Arquivos com dados restritos da Secretaria foram omitidos, atendendo ao que determina a LGPD.**
+Arquivos com dados restritos da Secretaria foram omitidos, atendendo ao que determina a LGPD.
 ```
 
- ## Interfaces da Aplicação
+ ## Interface da Aplicação
 
 ![Tela do sistema 1](interface-imagens/01.png)
 ![Tela do sistema 2](interface-imagens/02.png)
